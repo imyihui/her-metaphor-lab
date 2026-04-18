@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Her Metaphor Lab — Still Becoming</title>
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --paper: #eae8e2; --paper-dark: #d5d3cd;
+  --ink: #0c0c0c; --muted: #4a4844;
+  --accent: #1f8f8b; --metal: #6f6a63;
+  --scan: rgba(12,12,12,.04); --ticker-h: 44px;
+  --bdepth: 3px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* grain + scanlines */
+body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:10000; opacity:.10;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply; }
+body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.28;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scan) 2px,var(--scan) 3px);
+  mix-blend-mode: multiply; }
+
+/* ─── PAGE SHELL ─────────────────────────────────────────── */
+html, body {
+  height: 100%; overflow: hidden;
+  background: var(--paper); color: var(--ink);
+  font-family: ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+}
+.page-shell { display:flex; flex-direction:column; height:100vh; height:100dvh; }
+
+/* ─── HERO ── completely locked, zero scroll ─────────────── */
+.hero {
+  flex: 1; min-height: 0;
+  overflow: hidden;
+  border-top: 3px solid var(--ink);
+  display: flex; align-items: center; /* ← vertically centres the grid */
+}
+.hero-grid {
+  width: 100%;                 /* ← auto-height: sizes to content */
+  max-width: 1300px; margin: 0 auto;
+  padding: 18px 28px;
+  display: grid; gap: 32px;
+  align-items: stretch;        /* ← both columns stretch to same height */
+}
+@media (min-width: 900px) {
+  .hero-grid { grid-template-columns: 1.15fr .85fr; }
+}
+
+/* LEFT column: flex-column, content centred vertically */
+.hero-left {
+  display: flex; flex-direction: column; justify-content: center; gap: 0;
+  overflow: hidden; min-height: 0;
+}
+
+/* brand */
+.hero-brand { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.hero-brand img { width:52px; height:52px; object-fit:contain; border:none; display:block; }
+.hero-brand-name { font-family:system-ui,sans-serif; font-size:11px; font-weight:900;
+  text-transform:uppercase; letter-spacing:.1em; line-height:1.2; }
+
+/* headline — fluid, won't overflow */
+h1 { font-family:system-ui,sans-serif;
+  font-size: clamp(1.45rem, 3.8vw, 3.8rem);
+  line-height:.91; text-transform:uppercase; letter-spacing:-.03em; margin-bottom:14px; }
+h1 span { display:block; }
+.frag { color:var(--accent); }
+.metal-txt { color:var(--metal); }
+
+/* lede */
+.hero-lede { border-left:3px solid var(--ink); padding-left:13px; margin-bottom:18px; }
+.hero-lede p { font-size:11px; line-height:1.75; color:var(--muted); }
+.hero-lede p+p { margin-top:10px; padding-top:10px;
+  border-top:1px solid rgba(12,12,12,.11);
+  font-size:10.5px; font-style:italic; color:var(--metal); }
+
+/* ─── BUTTONS ── push-depth, teal hover ─────────────────── */
+.hero-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.btn {
+  border:2px solid var(--ink); background:var(--paper); color:var(--ink);
+  padding:9px 16px; font:inherit; font-size:8.5px;
+  text-transform:uppercase; letter-spacing:.2em; cursor:pointer;
+  box-shadow: 0 var(--bdepth) 0 0 var(--ink);
+  transition: background .12s, color .12s, border-color .12s, box-shadow .07s, transform .07s;
+  user-select:none;
+}
+.btn:hover { background:var(--accent); border-color:var(--accent); color:var(--paper); }
+.btn:active { box-shadow:0 1px 0 0 var(--ink); transform:translateY(2px); }
+.btn-fill { background:var(--ink); color:var(--paper); box-shadow:0 var(--bdepth) 0 0 #222; }
+.btn-fill:hover { background:var(--accent); border-color:var(--accent); }
+.btn-fill:active { box-shadow:0 1px 0 0 #222; transform:translateY(2px); }
+.close-btn { border:2px solid var(--ink); background:var(--paper);
+  font:inherit; font-size:8.5px; letter-spacing:.18em; text-transform:uppercase;
+  padding:7px 12px; cursor:pointer;
+  box-shadow:0 var(--bdepth) 0 0 var(--ink);
+  transition: background .12s, color .12s, border-color .12s, box-shadow .07s, transform .07s; }
+.close-btn:hover { background:var(--accent); border-color:var(--accent); color:var(--paper); }
+.close-btn:active { box-shadow:0 1px 0 0 var(--ink); transform:translateY(2px); }
+
+/* ─── RIGHT COLUMN ─────────────────────────────────────────
+   The key: flex column fills full height of the grid cell.
+   cover-wrapper takes all remaining space (flex:1, min-height:0).
+   audio-block is fixed-height (flex-shrink:0) at the bottom.
+   ─────────────────────────────────────────────────────────── */
+.hero-aside {
+  display: flex; flex-direction: column;
+  gap: 12px;
+  /* height determined by grid row — matches left column */
+}
+
+/* cover section grows to fill available space */
+.cover-wrapper {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  overflow: visible;
+}
+.zine-label { font-size:8.5px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--metal); margin-bottom:7px; flex-shrink:0; }
+
+/* button — let image set the size naturally */
+.cover-button {
+  border:none; background:transparent; cursor:pointer; padding:0;
+  flex:1; min-height:0;
+  display:flex; align-items:flex-start;   /* image anchors to top, shadow follows */
+  transition: filter .18s;
+  overflow: visible;
+}
+.cover-button:hover { filter:brightness(.93); }
+.cover-button:active { filter:brightness(.88); }
+
+/* image: fill column width, height auto — element IS the image, shadow is exact */
+.zine-cover {
+  border:none; display:block;
+  width:100%; height:auto;
+  object-fit:fill;
+  box-shadow: 6px 8px 28px rgba(0,0,0,.28), 2px 3px 8px rgba(0,0,0,.14),
+              0 0 0 1px rgba(12,12,12,.06);
+  border-radius:5px;
+}
+
+/* fallback placeholder */
+.zine-cover-placeholder {
+  border:2px solid var(--ink); background:var(--paper-dark);
+  flex:1; min-height:0; display:flex; flex-direction:column;
+  justify-content:space-between; padding:16px; position:relative; overflow:hidden; }
+.zine-cover-placeholder::before { content:''; position:absolute; inset:0;
+  background-image:radial-gradient(circle,rgba(12,12,12,.06) 1px,transparent 1px);
+  background-size:9px 9px; }
+.zcp-tag { font-size:8px; letter-spacing:.28em; text-transform:uppercase; color:var(--metal); position:relative; }
+.zcp-title { font-family:system-ui,sans-serif; font-size:clamp(1.1rem,3.5vw,1.9rem); font-weight:900;
+  text-transform:uppercase; line-height:.9; letter-spacing:-.02em; position:relative; }
+.zcp-title .zcp-hollow { color:transparent; -webkit-text-stroke:1.5px var(--ink); }
+.zcp-title .zcp-accent { color:var(--accent); }
+.zcp-meta { font-size:8px; letter-spacing:.18em; text-transform:uppercase; color:var(--metal); position:relative; }
+
+/* ─── AUDIO BLOCK ── always at bottom, fixed height ─────── */
+.audio-block {
+  flex-shrink: 0;                /* ← never compressed away */
+  border: 2px solid var(--ink);  /* all four sides */
+  padding: 11px 13px;
+  position: relative; overflow: hidden; background: var(--paper);
+}
+.audio-block::before { content:''; position:absolute; inset:0;
+  background-image:radial-gradient(circle,rgba(12,12,12,.06) 1px,transparent 1px);
+  background-size:7px 7px; pointer-events:none; }
+.audio-block > * { position:relative; z-index:1; }
+.audio-block .label { font-size:8.5px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--metal); margin-bottom:8px; }
+
+/* 2. AUDIO FIX — correct MIME for .aac */
+.audio-block audio {
+  width:100%; height:28px; display:block;
+  filter:grayscale(1) contrast(1.1);
+}
+
+.audio-row { display:flex; align-items:center; gap:12px; margin-top:9px; }
+.audio-quote { flex:1; font-size:10px; line-height:1.6; color:var(--muted);
+  border-left:2px solid var(--accent); padding-left:9px; font-style:italic; }
+.audio-row .btn { flex-shrink:0; white-space:nowrap; font-size:8px; padding:8px 11px; }
+
+/* ─── TICKER ─────────────────────────────────────────────── */
+.ticker { flex-shrink:0; height:var(--ticker-h); background:var(--accent); color:var(--paper);
+  border-top:2.5px solid var(--ink); overflow:hidden; white-space:nowrap;
+  display:flex; align-items:center; }
+.ticker-inner { display:inline-flex; align-items:center; animation:ticker 36s linear infinite; }
+.ticker-item { font-family:system-ui,sans-serif; font-size:10px; font-weight:800;
+  letter-spacing:.16em; text-transform:uppercase; padding:0 28px; }
+.ticker-dot { opacity:.45; padding:0 4px; }
+@keyframes ticker { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+/* ─── POPUPS ─────────────────────────────────────────────── */
+.popup { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.72);
+  display:none; align-items:center; justify-content:center; padding:2vh 2vw; }
+.popup[aria-hidden="false"] { display:flex; }
+.popup-panel { background:var(--paper); width:min(96vw,1540px); height:min(94vh,1060px);
+  border:3px solid var(--ink); display:flex; flex-direction:column; }
+.popup-head { display:flex; justify-content:space-between; align-items:center; gap:20px;
+  border-bottom:2px solid var(--ink); padding:12px 18px; flex-shrink:0; }
+.popup-title { text-transform:uppercase; font-size:10px; letter-spacing:.2em; }
+.popup-content { overflow-y:auto; overflow-x:hidden; flex:1; }
+
+/* ─── ARCHIVE POPUP ──────────────────────────────────────── */
+.archive-scroll { max-width:870px; margin:0 auto; padding:44px 24px 64px;
+  display:flex; flex-direction:column; }
+.archive-intro { max-width:620px; margin:0 auto 52px; width:100%; }
+.archive-intro-label { font-size:8px; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:14px; }
+.archive-intro p { font-size:12px; line-height:1.85; color:var(--muted); }
+.archive-intro p+p { margin-top:12px; }
+.archive-item { width:100%; }
+.archive-item+.archive-item { margin-top:52px; }
+.archive-item-label { font-size:8px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--metal); margin-bottom:9px; padding-left:2px; }
+.archive-img-cover,.archive-img-bottom { display:block; width:420px; max-width:100%; height:auto;
+  border:none; box-shadow:0 8px 36px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.09); border-radius:1px; }
+.archive-img { display:block; width:100%; height:auto; border:none;
+  box-shadow:0 6px 30px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.08); border-radius:1px; }
+
+/* short teal rule before the speaker name */
+.mch-speaker::before {
+  content:''; display:block;
+  width:20px; height:1px;
+  background:#1f8f8b; flex-shrink:0;
+}
+
+/* ── PLAYER ── waveform + native audio at the bottom ── */
+.mch-player {
+  flex-shrink:0;
+  display:flex; flex-direction:column;
+  align-items:stretch;
+  padding:12px 18px 16px; gap:10px;
+  border-top:1px solid rgba(31,143,139,.2);
+}
+
+/* decorative waveform bars */
+.mch-wave {
+  display:flex; align-items:center; justify-content:center; gap:2.5px;
+  height:44px;
+}
+.mch-wave span {
+  display:block; width:2px; border-radius:1px; flex-shrink:0;
+  background:linear-gradient(180deg,
+    rgba(31,143,139,.95) 0%,
+    rgba(31,143,139,.18) 100%
+  );
+  transform-origin:bottom center;
+  transition: opacity .3s;
+}
+
+/* pulse animation when card is actively playing */
+@keyframes mch-bar-pulse {
+  0%   { transform: scaleY(1);    opacity:.85; }
+  100% { transform: scaleY(.38);  opacity:.38; }
+}
+.mc.is-playing .mch-wave span {
+  animation: mch-bar-pulse .65s ease-in-out infinite alternate;
+}
+/* stagger the bars so they look like a real waveform */
+.mc.is-playing .mch-wave span:nth-child(1)  { animation-delay:0s;    }
+.mc.is-playing .mch-wave span:nth-child(2)  { animation-delay:.05s;  }
+.mc.is-playing .mch-wave span:nth-child(3)  { animation-delay:.14s;  }
+.mc.is-playing .mch-wave span:nth-child(4)  { animation-delay:.08s;  }
+.mc.is-playing .mch-wave span:nth-child(5)  { animation-delay:.22s;  }
+.mc.is-playing .mch-wave span:nth-child(6)  { animation-delay:.03s;  }
+.mc.is-playing .mch-wave span:nth-child(7)  { animation-delay:.18s;  }
+.mc.is-playing .mch-wave span:nth-child(8)  { animation-delay:.11s;  }
+.mc.is-playing .mch-wave span:nth-child(9)  { animation-delay:.28s;  }
+.mc.is-playing .mch-wave span:nth-child(10) { animation-delay:.07s;  }
+.mc.is-playing .mch-wave span:nth-child(11) { animation-delay:.16s;  }
+.mc.is-playing .mch-wave span:nth-child(12) { animation-delay:.33s;  }
+.mc.is-playing .mch-wave span:nth-child(13) { animation-delay:.09s;  }
+.mc.is-playing .mch-wave span:nth-child(14) { animation-delay:.24s;  }
+.mc.is-playing .mch-wave span:nth-child(15) { animation-delay:.42s;  }
+.mc.is-playing .mch-wave span:nth-child(16) { animation-delay:.12s;  }
+.mc.is-playing .mch-wave span:nth-child(17) { animation-delay:.37s;  }
+.mc.is-playing .mch-wave span:nth-child(18) { animation-delay:.19s;  }
+
+/* audio player — teal-tinted, full width */
+.mch-player audio {
+  width:100%; display:block; height:28px;
+  filter:brightness(1.35) sepia(.6) hue-rotate(138deg) saturate(2.4);
+}
+
+/* thin teal gradient rule between waveform and audio */
+.mch-player-rule {
+  width:100%; height:1px; flex-shrink:0;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(31,143,139,.4) 30%,
+    rgba(31,143,139,.4) 70%,
+    transparent 100%
+  );
+}
+/* ── ALL IMAGES — non-downloadable ─────────────────────────────────── */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* cover-button needs pointer-events for hover/click; images inside it are still non-draggable */
+.cover-button { pointer-events: auto; }
+.cover-button img { pointer-events: none; }
+
+/* AUDIO CARD — vertical rectangle */
+/* ── AUDIO CARD ───────────────────────────────────────────
+   Normal state: dark bg + dot texture + geometric art.
+   Hover: teal fill + quote + inline player.
+   ──────────────────────────────────────────────────────── */
+.mc {
+  position:relative; overflow:hidden; cursor:pointer;
+  background:var(--ink); border-radius:1px;
+  display:flex; flex-direction:column;
+  transition: transform .2s, box-shadow .2s;
+}
+.mc:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.32); }
+
+/* dot texture */
+.mc::before { content:''; position:absolute; inset:0; z-index:1;
+  background-image:radial-gradient(circle,rgba(255,255,255,.07) 1px,transparent 1px);
+  background-size:6px 6px; pointer-events:none; }
+
+/* card footer — visible at rest */
+.mc-foot { position:relative; z-index:2; padding:14px 16px 16px;
+  border-top:1px solid rgba(255,255,255,.06); flex:1; display:flex; flex-direction:column; gap:7px; }
+.mc-num { font-size:7px; letter-spacing:.24em; text-transform:uppercase; color:rgba(255,255,255,.3); }
+.mc-quote-rest { font-size:10.5px; line-height:1.6; color:rgba(255,255,255,.5); font-style:italic; }
+
+/* ── VIDEO CARD ────────────────────────────────────────────
+   Native HTML5 controls for full-featured play/pause/volume.
+   Hover: lift + highlighted caption background.
+   ──────────────────────────────────────────────────────── */
+.vc {
+  position:relative; overflow:hidden; background:#000; border-radius:1px;
+  display:flex; flex-direction:column;
+  transition: transform .22s, box-shadow .22s;
+}
+.vc:hover { transform:translateY(-3px); box-shadow:0 16px 36px rgba(0,0,0,.38); }
+
+.vc-media { position:relative; flex-shrink:0; background:#000; overflow:hidden; }
+.vc-media video {
+  display:block; width:100%; height:auto; max-height:240px; object-fit:cover;
+  transition: filter .22s;
+}
+.vc:hover .vc-media video { filter: brightness(1.06) contrast(1.04); }
+
+/* dot texture on video */
+.vc-media::before { content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background-image:radial-gradient(circle,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:6px 6px; }
+
+/* teal accent line that appears on hover at top of caption */
+.vc-caption {
+  padding:13px 16px 16px; background:var(--ink); flex:1;
+  border-top: 2px solid transparent;
+  transition: background .22s, border-color .22s;
+  position: relative;
+}
+.vc:hover .vc-caption {
+  background: #0d2e2c;          /* deep teal-dark highlight */
+  border-top-color: var(--accent);
+}
+
+.vc-caption-num {
+  font-size:7px; letter-spacing:.24em; text-transform:uppercase;
+  color:rgba(255,255,255,.28); margin-bottom:6px;
+  transition: color .22s;
+}
+.vc:hover .vc-caption-num { color: rgba(31,143,139,.8); }
+
+.vc-caption-text {
+  font-size:10.5px; line-height:1.6; color:rgba(255,255,255,.58); font-style:italic;
+  transition: color .22s;
+}
+.vc:hover .vc-caption-text { color: rgba(234,232,226,.88); }
+
+/* ─── FRAGMENT POPUP ─────────────────────────────────────── */
+.fragment-layout { display:flex; height:100%; overflow:hidden; }
+.fragment-poster { flex:0 0 auto; width:320px; background:var(--paper);
+  border-right:2px solid var(--ink); overflow:hidden; position:relative;
+  display:flex; align-items:center; justify-content:center; }
+.fragment-poster img { width:100%; height:100%; object-fit:contain; object-position:center; display:block; }
+.fragment-poster-fallback { position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; flex-direction:column; gap:12px; padding:24px; }
+.fragment-poster-fallback::before { content:''; position:absolute; inset:0;
+  background-image:radial-gradient(circle,rgba(12,12,12,.06) 1px,transparent 1px); background-size:8px 8px; }
+.fragment-poster-fallback span { font-size:clamp(1.8rem,4vw,3rem); font-family:system-ui,sans-serif;
+  font-weight:900; text-transform:uppercase; letter-spacing:-.04em; line-height:.88;
+  color:var(--ink); position:relative; }
+.fragment-poster-fallback span em { color:var(--accent); font-style:normal; }
+.fragment-form-area { flex:1; overflow-y:auto; padding:28px 32px; }
+.fragment-intro { margin-bottom:18px; }
+.fragment-intro p { font-size:12px; line-height:1.75; color:var(--muted); margin-bottom:12px; }
+.fragment-divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.fragment-divider::before,.fragment-divider::after { content:''; flex:1; height:1px; background:rgba(12,12,12,.16); }
+.fragment-divider-label { font-size:8px; letter-spacing:.26em; text-transform:uppercase; color:var(--metal); white-space:nowrap; }
+.fragment-form { display:grid; gap:14px; }
+.fragment-form label { font-size:8.5px; text-transform:uppercase; letter-spacing:.18em; display:block; color:var(--metal); }
+.fragment-form textarea,.fragment-form input[type="text"] {
+  display:block; width:100%; margin-top:6px;
+  border:2px solid var(--ink); background:var(--paper);
+  padding:9px 12px; font:inherit; font-size:12px; outline:none;
+  transition:border-color .15s; color:var(--ink); }
+.fragment-form textarea:focus,.fragment-form input[type="text"]:focus { border-color:var(--accent); }
+.fragment-form textarea { min-height:90px; resize:vertical; }
+.file-attach-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
+#frag-file { display:none; }
+.file-attach-label { font-size:8.5px; letter-spacing:.12em; color:var(--metal); }
+.safety-note { font-size:9.5px; line-height:1.7; color:var(--muted);
+  border-left:2px solid var(--metal); padding-left:10px; }
+
+@media (max-width:899px) {
+  .hero-grid { padding:16px; gap:16px; }
+  h1 { font-size:clamp(1.3rem,7vw,2.5rem); }
+  .fragment-layout { flex-direction:column; }
+  .fragment-poster { width:100%; height:190px; flex:0 0 190px; border-right:none; border-bottom:2px solid var(--ink); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MEDIA POPUP — full redesign
+   Card deck: 320×480px, border-radius:16px, random stack rotations.
+   Interaction: drag to spread, click to play, veil on play.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Panel override for media popup: dark background */
+#media-popup .popup-panel {
+  background: #111210;
+  border-color: rgba(255,255,255,.12);
+}
+#media-popup .popup-head {
+  background: #0c0c0c;
+  border-bottom-color: rgba(255,255,255,.1);
+}
+#media-popup .popup-title { color: rgba(234,232,226,.55); }
+/* ── Close btn on dark popup ────────────────────────────────────────
+   Static : subtle teal-tinted bg + crisp teal border + light text
+   Hover  : solid teal fill, white text, brighter border
+   Active : darker teal press, slight sink
+   ─────────────────────────────────────────────────────────────── */
+#media-popup .close-btn {
+  background: rgba(31,143,139,.12);
+  border: 1.5px solid rgba(31,143,139,.75);
+  color: rgba(234,232,226,.88);
+  box-shadow: none;
+  letter-spacing: .22em;
+}
+#media-popup .close-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(31,143,139,.22);
+}
+#media-popup .close-btn:active {
+  background: #157370;
+  border-color: #157370;
+  color: #fff;
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Stage: fills the popup body, centres the deck */
+.mp-stage {
+  flex: 1; min-height: 0;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* Teal veil — semi-transparent backdrop when a card is playing */
+.mp-veil {
+  position: absolute; inset: 0; z-index: 20;
+  background: rgba(31,143,139,.22);
+  backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s cubic-bezier(.4,0,.2,1);
+}
+.mp-stage.has-playing .mp-veil {
+  opacity: 1; pointer-events: none; /* clicks go to the playing card above */
+}
+
+/* Deck container — fills entire stage; cards are scattered across it */
+.mp-deck {
+  position: absolute; inset: 0;   /* galaxy canvas = full stage */
+}
+
+/* Legend hint at bottom */
+.mp-legend {
+  position: absolute; bottom: 18px; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  font-size: 7.5px; letter-spacing: .26em; text-transform: uppercase;
+  color: rgba(255,255,255,.2);
+  pointer-events: none;
+  transition: opacity .4s;
+}
+.mp-stage.has-playing .mp-legend { opacity: 0; }
+.mp-legend-sep { color: rgba(31,143,139,.45); }
+
+/* ── CARD ── 320×480px, 16px radius ─────────────────────────────── */
+:root { --card-w: 320px; --card-h: 480px; --card-r: 16px; }
+
+.mcard {
+  position: absolute;
+  /* left/top set by JS from --cx/--cy galaxy offsets */
+  width: var(--card-w); height: var(--card-h);
+  border-radius: var(--card-r);
+  overflow: hidden;
+  cursor: grab;
+  /* rotation only — translation handled via left/top */
+  transform: rotate(var(--r, 0deg));
+  transform-origin: center center;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .25s ease,
+              outline-color .22s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.45),
+              0 0 0 1.5px rgba(31,143,139,.55);   /* teal galaxy stroke */
+  /* no outline needed — stroke handled by box-shadow ring */
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.mcard:active { cursor: grabbing; }
+
+/* Dragging state */
+.mcard.dragging {
+  transition: box-shadow .15s;
+  box-shadow: 0 28px 60px rgba(0,0,0,.78), 0 4px 14px rgba(0,0,0,.5),
+              0 0 0 2px rgba(31,143,139,.9),
+              0 0 28px rgba(31,143,139,.22);
+  z-index: 100 !important;
+}
+
+/* Hover: lift, stroke brightens, teal corona */
+.mcard:hover:not(.dragging):not(.is-playing) {
+  transform: rotate(var(--r, 0deg)) translateY(-8px) scale(1.025);
+  box-shadow: 0 22px 52px rgba(0,0,0,.72), 0 4px 14px rgba(0,0,0,.5),
+              0 0 0 2px rgba(31,143,139,.9),
+              0 0 24px rgba(31,143,139,.2);
+}
+
+/* Playing: snap to centre, solid teal ring, stronger glow */
+.mcard.is-playing {
+  transform: rotate(0deg) !important;
+  z-index: 50 !important;
+  cursor: default;
+  box-shadow: 0 32px 72px rgba(0,0,0,.82),
+              0 0 0 2px var(--accent),
+              0 0 40px rgba(31,143,139,.28);
+  transition: box-shadow .3s ease;
+}
+
+/* ── Card layers ─────────────────────────────────────────────────── */
+
+/* Art: fills entire card as background */
+.mcard-art {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
+.mcard-art svg { display: block; width: 100%; height: 100%; }
+
+/* Dot texture over art */
+.mcard::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+/* Resting face: spacer + footer */
+.mcard-face {
+  position: relative; z-index: 2;
+  height: 100%;
+  display: flex; flex-direction: column;
+  transition: opacity .25s;
+}
+.mcard-spacer { flex: 1; }
+.mcard-foot {
+  padding: 0 22px 24px;
+  background: linear-gradient(0deg, rgba(10,10,10,.95) 0%, rgba(10,10,10,.75) 70%, transparent 100%);
+  padding-top: 48px;
+}
+.mcf-tag {
+  font-size: 6.5px; letter-spacing: .32em; text-transform: uppercase;
+  color: rgba(31,143,139,.85); margin-bottom: 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.mcf-tag::before { content: '◆'; font-size: 4px; }
+.mcf-name {
+  font-size: 8.5px; line-height: 1.5; letter-spacing: .04em;
+  color: rgba(234,232,226,.55); margin-bottom: 9px;
+}
+.mcf-quote {
+  font-size: 10px; line-height: 1.65;
+  color: rgba(234,232,226,.72); font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── HOVER OVERLAY ───────────────────────────────────────────────── */
+.mcard-hover {
+  position: absolute; inset: 0; z-index: 3;
+  background: linear-gradient(168deg, rgba(3,16,15,.93) 0%, rgba(8,20,18,.96) 55%, rgba(10,10,10,.97) 100%);
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity .28s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+/* dot texture */
+.mcard-hover::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(31,143,139,.052) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+.mcard-hover > * { position: relative; z-index: 1; }
+
+/* hover visible on hover and playing */
+.mcard:hover .mcard-hover,
+.mcard.is-playing .mcard-hover { opacity: 1; pointer-events: auto; }
+
+/* ── Hover: header ── */
+.mch-head {
+  padding: 18px 22px 14px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(31,143,139,.2);
+  position: relative;
+}
+.mch-head::before { /* corner bracket TL */
+  content: ''; position: absolute; top: 14px; left: 16px;
+  width: 10px; height: 10px;
+  border-top: 1.5px solid rgba(31,143,139,.6);
+  border-left: 1.5px solid rgba(31,143,139,.6);
+}
+.mch-head::after { /* corner bracket BR */
+  content: ''; position: absolute; bottom: 10px; right: 16px;
+  width: 10px; height: 10px;
+  border-bottom: 1.5px solid rgba(31,143,139,.6);
+  border-right: 1.5px solid rgba(31,143,139,.6);
+}
+.mch-tag {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 6px; letter-spacing: .34em; text-transform: uppercase;
+  color: rgba(31,143,139,.9); margin-bottom: 8px; padding-left: 2px;
+}
+.mch-tag::before { content: '◆'; font-size: 4px; }
+.mch-name {
+  font-size: 8px; line-height: 1.55; letter-spacing: .05em;
+  color: rgba(234,232,226,.52); padding-left: 2px;
+}
+
+/* ── Hover: quote (fills space) ── */
+.mch-quote {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  padding: 18px 22px 14px; position: relative; min-height: 0;
+}
+.mch-quote::before { /* decorative open-quote */
+  content: 'C';
+  position: absolute; top: 10px; left: 16px;
+  font-size: 58px; line-height: 1; color: rgba(31,143,139,.15);
+  font-family: Georgia, serif; pointer-events: none; z-index: 0;
+}
+.mch-qt {
+  position: relative; z-index: 1;
+  font-size: 11.5px; line-height: 1.72;
+  color: rgba(234,232,226,.82); font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  margin-bottom: 14px;
+}
+.mch-speaker {
+  position: relative; z-index: 1;
+  font-size: 7px; letter-spacing: .26em; text-transform: uppercase;
+  color: rgba(31,143,139,.78);
+  display: flex; align-items: center; gap: 9px;
+}
+.mch-speaker::before {
+  content: ''; display: block; width: 22px; height: 1px;
+  background: #1f8f8b; flex-shrink: 0;
+}
+
+/* ── Hover: player (anchored at bottom) ── */
+.mch-player {
+  flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 14px 22px 22px; gap: 11px;    /* slightly lower = generous bottom pad */
+  border-top: 1px solid rgba(31,143,139,.18);
+}
+
+/* waveform bars */
+.mch-wave {
+  display: flex; align-items: center; justify-content: center; gap: 2.5px;
+  height: 42px;
+}
+.mch-wave span {
+  display: block; width: 2px; border-radius: 1px; flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(31,143,139,.95) 0%, rgba(31,143,139,.18) 100%);
+  transform-origin: bottom center;
+}
+@keyframes mch-bar-pulse {
+  0%   { transform: scaleY(1);   opacity: .88; }
+  100% { transform: scaleY(.34); opacity: .34; }
+}
+.mcard.is-playing .mch-wave span {
+  animation: mch-bar-pulse .65s ease-in-out infinite alternate;
+}
+.mcard.is-playing .mch-wave span:nth-child(1)  { animation-delay: 0s; }
+.mcard.is-playing .mch-wave span:nth-child(2)  { animation-delay: .05s; }
+.mcard.is-playing .mch-wave span:nth-child(3)  { animation-delay: .14s; }
+.mcard.is-playing .mch-wave span:nth-child(4)  { animation-delay: .08s; }
+.mcard.is-playing .mch-wave span:nth-child(5)  { animation-delay: .22s; }
+.mcard.is-playing .mch-wave span:nth-child(6)  { animation-delay: .03s; }
+.mcard.is-playing .mch-wave span:nth-child(7)  { animation-delay: .18s; }
+.mcard.is-playing .mch-wave span:nth-child(8)  { animation-delay: .11s; }
+.mcard.is-playing .mch-wave span:nth-child(9)  { animation-delay: .28s; }
+.mcard.is-playing .mch-wave span:nth-child(10) { animation-delay: .07s; }
+.mcard.is-playing .mch-wave span:nth-child(11) { animation-delay: .16s; }
+.mcard.is-playing .mch-wave span:nth-child(12) { animation-delay: .33s; }
+.mcard.is-playing .mch-wave span:nth-child(13) { animation-delay: .09s; }
+.mcard.is-playing .mch-wave span:nth-child(14) { animation-delay: .24s; }
+.mcard.is-playing .mch-wave span:nth-child(15) { animation-delay: .42s; }
+.mcard.is-playing .mch-wave span:nth-child(16) { animation-delay: .12s; }
+.mcard.is-playing .mch-wave span:nth-child(17) { animation-delay: .37s; }
+.mcard.is-playing .mch-wave span:nth-child(18) { animation-delay: .19s; }
+
+.mch-player-rule {
+  width: 100%; height: 1px; flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, rgba(31,143,139,.4) 30%, rgba(31,143,139,.4) 70%, transparent);
+}
+
+/* audio player — teal-tinted */
+.mch-player audio {
+  width: 100%; display: block; height: 28px;
+  filter: brightness(1.35) sepia(.6) hue-rotate(138deg) saturate(2.4);
+}
+
+/* video player in card */
+.mch-player video {
+  width: 100%; display: block; max-height: 180px;
+  border-radius: 8px; background: #000;
+  object-fit: cover;
+}
+
+/* ── Cancel button ───────────────────────────────────────────────── */
+.mcard-cancel {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid rgba(31,143,139,.65);
+  background: rgba(10,10,10,.85);
+  color: rgba(31,143,139,.9); font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s, background .15s, transform .15s;
+}
+.mcard.is-playing .mcard-cancel {
+  opacity: 1; pointer-events: auto;
+}
+.mcard-cancel:hover { background: rgba(31,143,139,.25); transform: scale(1.1); }
+
+/* ── Responsive: scale the deck on small windows ─────────────────── */
+@media (max-height: 680px), (max-width: 480px) {
+  :root { --card-w: 280px; --card-h: 420px; --card-r: 14px; }
+}
+@media (max-height: 550px), (max-width: 360px) {
+  :root { --card-w: 240px; --card-h: 360px; --card-r: 12px; }
+}
+
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="top">
+  <div class="hero-grid">
+
+<!-- LEFT: manifesto + actions -->
+      <div class="hero-left">
+        <div class="hero-brand">
+          <img draggable="false" oncontextmenu="return false"
+            src="asset/logo/hermetaphorlab.svg"
+            alt="Her Metaphor Lab logo"
+            onerror="this.style.display='none'">
+          <div class="hero-brand-name">Her Metaphor Lab</div>
+        </div>
+
+        <h1>
+          <span>Alternative / narratives / of</span>
+          <span><span class="frag">gendered</span> / adulthood</span>
+          <span class="metal">under split / sky</span>
+          <span>Open / Closed</span>
+        </h1>
+
+        <!-- 2. LEDE — two paragraphs -->
+        <div class="hero-lede">
+          <p>Her Metaphor Lab is an experimental publishing practice constructing counter-narratives of gendered becoming. We collect fragments through interviews and fieldwork. We translate them into non-linear forms. Not to explain a life — but to resist how it is expected to unfold.</p>
+          <p>'Her' does not indicate ownership. It marks a displacement. A voice that is present, but not centered.</p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn btn-fill" type="button" data-open="archive-popup">Enter archive</button>
+          <button class="btn" type="button" data-open="fragment-popup">Send a fragment</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: zine cover + audio -->
+      <div class="hero-aside">
+
+        <!-- 3. Zine cover — full natural ratio -->
+        <div class="cover-wrapper">
+          <div class="zine-label">Still Becoming — current issue</div>
+          <button class="cover-button" type="button" data-open="archive-popup">
+            <img draggable="false" oncontextmenu="return false"
+              class="zine-cover"
+              id="zine-img"
+              src="asset/still-becoming/zine-homepage.jpg"
+              alt="Cover of the zine Still Becoming"
+              onerror="this.style.display='none'; document.getElementById('zine-fallback').style.display='flex';">
+            <div class="zine-cover-placeholder" id="zine-fallback" style="display:none;">
+              <span class="zcp-tag">Still Becoming — Issue 01</span>
+              <div class="zcp-title">
+                <span class="zcp-hollow">STILL</span><br>
+                <span class="zcp-accent">BECOMING</span>
+              </div>
+              <span class="zcp-meta">Her Metaphor Lab · Beijing · 2024</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- 4. Audio block — dot texture, quote + button in one row -->
+        <div class="audio-block">
+          <div class="label">Interview excerpt — Still Becoming</div>
+          <audio controls preload="metadata">
+            <source src="asset/audio/Interview-audio-1.aac" type="audio/aac">
+            Your browser doesn't support audio.
+          </audio>
+          <div class="audio-row">
+            <p class="audio-quote">
+              "I would never follow a traditional life path, I am nothing like those people" — XiaoFeng
+            </p>
+            <button class="btn" type="button" data-open="media-popup">More audios &amp; videos</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-inner">
+    <span class="ticker-item">Her Metaphor Lab</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We reject individual alienation and prescribed endings</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Peking · Research · Resistance</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We create spaces for what adulthood might still become</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Send a fragment</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We see identity as a verb, not a noun</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Still Becoming</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We trace what it means to live, dream and become</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Her Metaphor Lab</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We reject individual alienation and prescribed endings</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Peking · Research · Resistance</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We create spaces for what adulthood might still become</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Send a fragment</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We see identity as a verb, not a noun</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">Still Becoming</span><span class="ticker-dot">//</span>
+    <span class="ticker-item">We trace what it means to live, dream and become</span><span class="ticker-dot">//</span>
+  </div>
+</div>
+</div><!-- /page-shell -->
+
+<!-- ══ ARCHIVE POPUP ══ -->
+<section class="popup" id="archive-popup" aria-hidden="true">
+  <div class="popup-panel">
+    <div class="popup-head">
+      <div class="popup-title">Still Becoming — pages archive</div>
+      <button class="close-btn" type="button" data-close>Close ✕</button>
+    </div>
+    <div class="popup-content">
+      <div class="archive-scroll">
+        <div class="archive-intro">
+          <div class="archive-intro-label">Still Becoming — Issue 01 · Introduction</div>
+          <p>Still Becoming Issue 1 explores identity as an ongoing and unfinished process, particularly within the '90s generation.</p>
+          <p>The project is grounded in investigative research, including interviews and collected fragments of lived experiences. Rather than forming a unified narrative, these materials are intentionally presented as discontinuous and sometimes contradictory moments.</p>
+          <p>Through non-linear sequencing, metaphorical imagery, and fragmented conversations, the zine constructs a narrative system where meaning is not fixed but emerges through the reader's navigation.</p>
+          <p>It aims to create a space for unfinished, resistant, and freely expressed forms of becoming, where identity is not concluded but continuously in flux.</p>
+        </div>
+        <div class="archive-item"><div class="archive-item-label">Cover</div><img draggable="false" oncontextmenu="return false" class="archive-img-cover" src="asset/still-becoming/zine_cover.jpg" alt="Cover" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 01</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page1.jpg" alt="Page 01" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 02</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page2.jpg" alt="Page 02" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 03</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page3.jpg" alt="Page 03" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 04</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page4.jpg" alt="Page 04" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 05</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page5.jpg" alt="Page 05" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 06</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page6.jpg" alt="Page 06" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 07</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page7.jpg" alt="Page 07" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 08</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page8.jpg" alt="Page 08" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 09</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page9.jpg" alt="Page 09" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 10</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page10.jpg" alt="Page 10" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 11</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page11.jpg" alt="Page 11" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 12</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page12.jpg" alt="Page 12" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 13</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page13.jpg" alt="Page 13" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 14</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page14.jpg" alt="Page 14" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 15</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page15.jpg" alt="Page 15" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 16</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page16.jpg" alt="Page 16" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 17</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page17.jpg" alt="Page 17" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 18</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page18.jpg" alt="Page 18" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 19</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page19.jpg" alt="Page 19" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 20</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page20.jpg" alt="Page 20" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 21</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page21.jpg" alt="Page 21" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 22</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page22.jpg" alt="Page 22" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Page 23</div><img draggable="false" oncontextmenu="return false" class="archive-img" src="asset/still-becoming/zine_page23.jpg" alt="Page 23" loading="lazy"></div>
+        <div class="archive-item"><div class="archive-item-label">Back cover</div><img draggable="false" oncontextmenu="return false" class="archive-img-bottom" src="asset/still-becoming/zine_bottom.jpg" alt="Back cover" loading="lazy"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MEDIA POPUP ══ -->
+<section class="popup" id="media-popup" aria-hidden="true">
+  <div class="popup-panel mp-panel">
+    <div class="popup-head">
+      <div class="popup-title">Still Becoming — Interview fragments</div>
+      <button class="close-btn" type="button" data-close>Close ✕</button>
+    </div>
+    <!-- Full-stage deck area -->
+    <div class="mp-stage" id="mp-stage">
+      <!-- Teal veil — covers stage when a card is playing -->
+      <div class="mp-veil" id="mp-veil"></div>
+      <!-- The deck -->
+      <div class="mp-deck" id="mp-deck">
+          <!-- A01 -->
+          <div class="mcard mcard--audio" data-id="A01" data-kind="audio"
+               style="--cx:-490px; --cy:-100px; --r:-17deg; z-index:1;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="ga1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".18"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga1)"/>
+<line x1="0" y1="60" x2="320" y2="60" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="120" x2="320" y2="120" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="180" x2="320" y2="180" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="240" x2="320" y2="240" stroke="rgba(255,255,255,.05)" stroke-width=".6"/>
+<line x1="0" y1="300" x2="320" y2="300" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="360" x2="320" y2="360" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="420" x2="320" y2="420" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="64" y1="0" x2="64" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="128" y1="0" x2="128" y2="480" stroke="rgba(255,255,255,.05)" stroke-width=".6"/>
+<line x1="160" y1="0" x2="160" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="192" y1="0" x2="192" y2="480" stroke="rgba(255,255,255,.05)" stroke-width=".6"/>
+<line x1="256" y1="0" x2="256" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="0" x2="320" y2="480" stroke="rgba(255,255,255,.03)" stroke-width=".8"/>
+<line x1="320" y1="0" x2="0" y2="480" stroke="rgba(255,255,255,.03)" stroke-width=".8"/>
+<polygon points="160,36 304,240 160,444 16,240" fill="none" stroke="rgba(31,143,139,.14)" stroke-width="1"/>
+<polygon points="160,96 256,240 160,384 64,240" fill="none" stroke="rgba(31,143,139,.28)" stroke-width="1.2"/>
+<polygon points="160,144 224,240 160,336 96,240" fill="none" stroke="rgba(31,143,139,.44)" stroke-width="1.4"/>
+<line x1="160" y1="0" x2="160" y2="480" stroke="rgba(31,143,139,.22)" stroke-width="1" stroke-dasharray="7 7"/>
+<line x1="0" y1="240" x2="320" y2="240" stroke="rgba(31,143,139,.22)" stroke-width="1" stroke-dasharray="7 7"/>
+<circle cx="160" cy="240" r="5" fill="none" stroke="rgba(31,143,139,.9)" stroke-width="1.3"/>
+<circle cx="160" cy="240" r="1.5" fill="#1f8f8b"/>
+<polyline points="24,28 24,48 44,48" fill="none" stroke="rgba(31,143,139,.55)" stroke-width="1.4"/>
+<polyline points="296,28 296,48 276,48" fill="none" stroke="rgba(31,143,139,.55)" stroke-width="1.4"/>
+<polyline points="24,452 24,432 44,432" fill="none" stroke="rgba(31,143,139,.55)" stroke-width="1.4"/>
+<polyline points="296,452 296,432 276,432" fill="none" stroke="rgba(31,143,139,.55)" stroke-width="1.4"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 01</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Xiaofeng (Freelance photographer) — 01</div>
+                <div class="mcf-quote">&#8220;At work, I actually spend most of my time feeling anxious and depressed—just listless.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Xiaofeng (Freelance photographer) — 01</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">At work, I actually spend most of my time feeling anxious and depressed—just listless.</div>
+                <div class="mch-speaker">Xiaofeng</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-2.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-2.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A02 -->
+          <div class="mcard mcard--audio" data-id="A02" data-kind="audio"
+               style="--cx:-300px; --cy:140px; --r:8deg; z-index:2;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><radialGradient id="ga2" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".22"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></radialGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga2)"/>
+<line x1="160" y1="240" x2="160" y2="20" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="300" y2="170" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="295" y2="325" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="68" y2="325" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="25" y2="170" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="234" y2="52" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<line x1="160" y1="240" x2="86" y2="52" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<circle cx="160" cy="240" r="180" fill="none" stroke="rgba(255,255,255,.03)" stroke-width=".8"/>
+<circle cx="160" cy="240" r="140" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<circle cx="160" cy="240" r="100" fill="none" stroke="rgba(31,143,139,.14)" stroke-width="1"/>
+<circle cx="160" cy="240" r="68" fill="none" stroke="rgba(31,143,139,.26)" stroke-width="1.2"/>
+<circle cx="160" cy="240" r="42" fill="none" stroke="rgba(31,143,139,.44)" stroke-width="1.3"/>
+<circle cx="160" cy="240" r="20" fill="none" stroke="rgba(31,143,139,.65)" stroke-width="1.3"/>
+<path d="M 160,172 A 68,68 0 0,1 228,240" fill="none" stroke="#1f8f8b" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="160" cy="240" r="5.5" fill="rgba(31,143,139,.25)" stroke="#1f8f8b" stroke-width="1.5"/>
+<circle cx="160" cy="240" r="1.8" fill="#1f8f8b"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 02</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Xiaofeng (Freelance photographer) — 02</div>
+                <div class="mcf-quote">&#8220;As long as I'm alive, I'll become who I want to be.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Xiaofeng (Freelance photographer) — 02</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">As long as I'm alive, I'll become who I want to be.</div>
+                <div class="mch-speaker">Xiaofeng</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-3.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-3.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A03 -->
+          <div class="mcard mcard--audio" data-id="A03" data-kind="audio"
+               style="--cx:-200px; --cy:-155px; --r:-22deg; z-index:3;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="ga3" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".2"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga3)"/>
+<line x1="0" y1="480" x2="320" y2="0" stroke="rgba(255,255,255,.03)" stroke-width=".7"/>
+<line x1="160" y1="0" x2="160" y2="480" stroke="rgba(255,255,255,.03)" stroke-width=".7"/>
+<polygon points="160,36 308,424 12,424" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
+<polygon points="160,80 284,388 36,388" fill="none" stroke="rgba(31,143,139,.14)" stroke-width="1"/>
+<polygon points="160,130 256,344 64,344" fill="none" stroke="rgba(31,143,139,.26)" stroke-width="1.2"/>
+<polygon points="160,184 224,300 96,300" fill="none" stroke="rgba(31,143,139,.42)" stroke-width="1.4"/>
+<polygon points="160,224 196,272 124,272" fill="rgba(31,143,139,.08)" stroke="rgba(31,143,139,.68)" stroke-width="1.4"/>
+<line x1="12" y1="424" x2="308" y2="424" stroke="rgba(31,143,139,.18)" stroke-width="1"/>
+<line x1="160" y1="36" x2="160" y2="224" stroke="rgba(31,143,139,.16)" stroke-width="1" stroke-dasharray="6 5"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 03</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Yael (Freelance designer) — 01</div>
+                <div class="mcf-quote">&#8220;My confusion started with a normal life or a stable one. I grew up against that… I just knew that I wanted to be different.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Yael (Freelance designer) — 01</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">My confusion started with a normal life or a stable one. I grew up against that… I just knew that I wanted to be different.</div>
+                <div class="mch-speaker">Yael</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-4.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-4.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A04 -->
+          <div class="mcard mcard--audio" data-id="A04" data-kind="audio"
+               style="--cx:-55px; --cy:155px; --r:13deg; z-index:4;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="ga4" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".18"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga4)"/>
+<line x1="0" y1="80" x2="320" y2="80" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="160" x2="320" y2="160" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="240" x2="320" y2="240" stroke="rgba(255,255,255,.05)" stroke-width=".6"/>
+<line x1="0" y1="320" x2="320" y2="320" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="0" y1="400" x2="320" y2="400" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="80" y1="0" x2="80" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="160" y1="0" x2="160" y2="480" stroke="rgba(255,255,255,.05)" stroke-width=".6"/>
+<line x1="240" y1="0" x2="240" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<rect x="36" y="132" width="248" height="216" fill="none" stroke="rgba(31,143,139,.18)" stroke-width="1"/>
+<rect x="84" y="132" width="148" height="130" fill="none" stroke="rgba(31,143,139,.32)" stroke-width="1.2"/>
+<rect x="110" y="158" width="96" height="96" fill="rgba(31,143,139,.06)" stroke="rgba(31,143,139,.56)" stroke-width="1.3"/>
+<line x1="160" y1="132" x2="160" y2="348" stroke="rgba(31,143,139,.22)" stroke-width="1" stroke-dasharray="6 4"/>
+<line x1="36" y1="240" x2="284" y2="240" stroke="rgba(31,143,139,.22)" stroke-width="1" stroke-dasharray="6 4"/>
+<line x1="36" y1="128" x2="36" y2="136" stroke="rgba(31,143,139,.5)" stroke-width="1.3"/>
+<line x1="284" y1="128" x2="284" y2="136" stroke="rgba(31,143,139,.5)" stroke-width="1.3"/>
+<line x1="32" y1="132" x2="40" y2="132" stroke="rgba(31,143,139,.5)" stroke-width="1.3"/>
+<line x1="32" y1="348" x2="40" y2="348" stroke="rgba(31,143,139,.5)" stroke-width="1.3"/>
+<circle cx="160" cy="240" r="3.5" fill="#1f8f8b" opacity=".85"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 04</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Yael (Freelance designer) — 02</div>
+                <div class="mcf-quote">&#8220;The word 'cute' — like a curse that follows me everywhere. Now, whenever I hear it, it feels like they are trying to degrade me.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Yael (Freelance designer) — 02</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">The word 'cute' — like a curse that follows me everywhere. Now, whenever I hear it, it feels like they are trying to degrade me.</div>
+                <div class="mch-speaker">Yael</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-5.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-5.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A05 -->
+          <div class="mcard mcard--audio" data-id="A05" data-kind="audio"
+               style="--cx:-340px; --cy:18px; --r:-7deg; z-index:5;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><radialGradient id="ga5" cx="40%" cy="44%" r="60%"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".22"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></radialGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga5)"/>
+<polygon points="160,36 282,106 282,246 160,316 38,246 38,106" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
+<polygon points="160,72 248,122 248,222 160,272 72,222 72,122" fill="none" stroke="rgba(31,143,139,.18)" stroke-width="1"/>
+<polygon points="160,112 220,148 220,204 160,240 100,204 100,148" fill="none" stroke="rgba(31,143,139,.36)" stroke-width="1.3"/>
+<line x1="160" y1="36" x2="160" y2="316" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<line x1="38" y1="106" x2="282" y2="246" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<line x1="282" y1="106" x2="38" y2="246" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+<line x1="160" y1="72" x2="160" y2="112" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<line x1="72" y1="122" x2="100" y2="148" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<line x1="248" y1="122" x2="220" y2="148" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<line x1="72" y1="222" x2="100" y2="204" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<line x1="248" y1="222" x2="220" y2="204" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<polygon points="160,112 220,148 220,204 160,240 100,204 100,148" fill="rgba(31,143,139,.07)"/>
+<polygon points="160,154 183,172 176,198 144,198 137,172" fill="none" stroke="rgba(31,143,139,.68)" stroke-width="1.3"/>
+<circle cx="160" cy="176" r="4" fill="#1f8f8b" opacity=".88"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 05</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Keke (High school teacher) — 01</div>
+                <div class="mcf-quote">&#8220;I used to feel like I didn't fit in with the world. Society had conditioned me to change myself.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Keke (High school teacher) — 01</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">I used to feel like I didn't fit in with the world. Society had conditioned me to change myself.</div>
+                <div class="mch-speaker">Keke</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-6.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-6.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A06 -->
+          <div class="mcard mcard--audio" data-id="A06" data-kind="audio"
+               style="--cx:170px; --cy:-140px; --r:19deg; z-index:6;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="ga6" x1=".5" y1="0" x2=".5" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".2"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga6)"/>
+<line x1="160" y1="30" x2="160" y2="440" stroke="rgba(31,143,139,.12)" stroke-width="1" stroke-dasharray="6 5"/>
+<path d="M24,110 Q80,54 160,110 Q240,166 296,110" fill="none" stroke="rgba(255,255,255,.07)" stroke-width=".9"/>
+<path d="M24,158 Q80,102 160,158 Q240,214 296,158" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".9"/>
+<path d="M24,196 Q60,164 96,196 Q132,228 160,196 Q188,164 224,196 Q260,228 296,196" fill="none" stroke="rgba(31,143,139,.26)" stroke-width="1.2"/>
+<path d="M24,224 Q60,192 96,224 Q132,256 160,224 Q188,192 224,224 Q260,256 296,224" fill="none" stroke="rgba(31,143,139,.42)" stroke-width="1.4"/>
+<path d="M24,252 Q60,220 96,252 Q132,284 160,252 Q188,220 224,252 Q260,284 296,252" fill="none" stroke="rgba(31,143,139,.26)" stroke-width="1.2"/>
+<path d="M24,290 Q50,271 74,290 Q100,309 124,290 Q148,271 160,290 Q172,309 196,290 Q220,271 246,290 Q270,309 296,290" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".9"/>
+<path d="M24,326 Q50,307 74,326 Q100,345 124,326 Q148,307 160,326 Q172,345 196,326 Q220,307 246,326 Q270,345 296,326" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".9"/>
+<circle cx="160" cy="196" r="3" fill="none" stroke="rgba(31,143,139,.65)" stroke-width="1.3"/>
+<circle cx="160" cy="224" r="5" fill="rgba(31,143,139,.22)" stroke="#1f8f8b" stroke-width="1.4"/>
+<circle cx="160" cy="252" r="3" fill="none" stroke="rgba(31,143,139,.65)" stroke-width="1.3"/>
+<circle cx="96" cy="224" r="2.5" fill="rgba(31,143,139,.42)"/>
+<circle cx="224" cy="224" r="2.5" fill="rgba(31,143,139,.42)"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 06</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Keke (High school teacher) — 02</div>
+                <div class="mcf-quote">&#8220;When I was a kid, people called me a "bitch." It took me a long time to get over my misogyny.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Keke (High school teacher) — 02</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">When I was a kid, people called me a "bitch." It took me a long time to get over my misogyny.</div>
+                <div class="mch-speaker">Keke</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-7.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-7.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- A07 -->
+          <div class="mcard mcard--audio" data-id="A07" data-kind="audio"
+               style="--cx:360px; --cy:95px; --r:-6deg; z-index:7;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="ga7" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".2"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#ga7)"/>
+<rect x="20" y="90" width="280" height="300" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".8" transform="rotate(0 160 240)"/>
+<rect x="36" y="108" width="248" height="264" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".8" transform="rotate(5 160 240)"/>
+<rect x="54" y="128" width="212" height="224" fill="none" stroke="rgba(31,143,139,.13)" stroke-width="1" transform="rotate(11 160 240)"/>
+<rect x="74" y="150" width="172" height="180" fill="none" stroke="rgba(31,143,139,.22)" stroke-width="1.1" transform="rotate(18 160 240)"/>
+<rect x="96" y="174" width="128" height="132" fill="none" stroke="rgba(31,143,139,.36)" stroke-width="1.2" transform="rotate(26 160 240)"/>
+<rect x="116" y="196" width="88" height="88" fill="none" stroke="rgba(31,143,139,.54)" stroke-width="1.3" transform="rotate(35 160 240)"/>
+<rect x="136" y="216" width="48" height="48" fill="rgba(31,143,139,.1)" stroke="rgba(31,143,139,.75)" stroke-width="1.3" transform="rotate(44 160 240)"/>
+<path d="M160,128 Q228,128 228,240 Q228,352 160,352 Q92,352 92,240 Q92,186 122,156" fill="none" stroke="rgba(31,143,139,.16)" stroke-width="1" stroke-dasharray="5 6"/>
+<circle cx="160" cy="240" r="4" fill="none" stroke="rgba(31,143,139,.9)" stroke-width="1.4"/>
+<circle cx="160" cy="240" r="1.4" fill="#1f8f8b"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">A · 07</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Audio</div>
+                <div class="mcf-name">Keke (High school teacher) — 03</div>
+                <div class="mcf-quote">&#8220;My life goal is not to gain my father's approval any more.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Audio</div>
+                <div class="mch-name">Keke (High school teacher) — 03</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">My life goal is not to gain my father's approval any more.</div>
+                <div class="mch-speaker">Keke</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <audio controls preload="none">
+                  <source src="asset/audio/Interview-audio-8.aac" type="audio/aac">
+                  <source src="asset/audio/Interview-audio-8.aac" type="audio/mp4">
+                </audio>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- V01 -->
+          <div class="mcard mcard--video" data-id="V01" data-kind="video"
+               style="--cx:-430px; --cy:-45px; --r:21deg; z-index:8;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="gv1" x1=".5" y1="0" x2=".5" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".2"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#gv1)"/>
+<line x1="160" y1="180" x2="0" y2="0" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="160" y1="180" x2="80" y2="0" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="160" y1="180" x2="160" y2="0" stroke="rgba(31,143,139,.12)" stroke-width=".8"/>
+<line x1="160" y1="180" x2="240" y2="0" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="160" y1="180" x2="320" y2="0" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="160" y1="180" x2="0" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="160" y1="180" x2="320" y2="480" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="160" y1="180" x2="0" y2="260" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<line x1="160" y1="180" x2="320" y2="260" stroke="rgba(255,255,255,.04)" stroke-width=".6"/>
+<rect x="40" y="60" width="240" height="120" fill="none" stroke="rgba(31,143,139,.14)" stroke-width="1"/>
+<rect x="68" y="84" width="184" height="80" fill="none" stroke="rgba(31,143,139,.26)" stroke-width="1.2"/>
+<rect x="100" y="106" width="120" height="48" fill="rgba(31,143,139,.06)" stroke="rgba(31,143,139,.46)" stroke-width="1.3"/>
+<circle cx="160" cy="180" r="6" fill="none" stroke="rgba(31,143,139,.7)" stroke-width="1.4"/>
+<circle cx="160" cy="180" r="2" fill="#1f8f8b"/>
+<line x1="0" y1="300" x2="320" y2="300" stroke="rgba(31,143,139,.08)" stroke-width=".8"/>
+<line x1="0" y1="380" x2="320" y2="380" stroke="rgba(31,143,139,.06)" stroke-width=".7"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">V · 01</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Video</div>
+                <div class="mcf-name">Naifu (Former teacher in the UK) — 01</div>
+                <div class="mcf-quote">&#8220;Uncertainty among adults exists in every culture, though the ways of dealing with it differ.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Video</div>
+                <div class="mch-name">Naifu (Former teacher in the UK) — 01</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">Uncertainty among adults exists in every culture, though the ways of dealing with it differ.</div>
+                <div class="mch-speaker">Naifu</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  <source src="asset/video/Interview-video-1.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- V02 -->
+          <div class="mcard mcard--video" data-id="V02" data-kind="video"
+               style="--cx:70px; --cy:-165px; --r:-14deg; z-index:9;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><radialGradient id="gv2" cx="55%" cy="42%" r="58%"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".22"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></radialGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#gv2)"/>
+<polygon points="160,40 300,280 20,280" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
+<polygon points="160,80 260,248 60,248" fill="none" stroke="rgba(31,143,139,.14)" stroke-width="1"/>
+<polygon points="160,124 220,216 100,216" fill="none" stroke="rgba(31,143,139,.28)" stroke-width="1.2"/>
+<polygon points="160,168 192,184 128,184" fill="rgba(31,143,139,.08)" stroke="rgba(31,143,139,.56)" stroke-width="1.4"/>
+<line x1="160" y1="40" x2="160" y2="280" stroke="rgba(31,143,139,.1)" stroke-width=".8" stroke-dasharray="5 5"/>
+<line x1="160" y1="40" x2="20" y2="280" stroke="rgba(255,255,255,.04)" stroke-width=".7"/>
+<line x1="160" y1="40" x2="300" y2="280" stroke="rgba(255,255,255,.04)" stroke-width=".7"/>
+<line x1="20" y1="280" x2="300" y2="280" stroke="rgba(31,143,139,.16)" stroke-width="1"/>
+<polygon points="160,300 240,380 80,380" fill="none" stroke="rgba(31,143,139,.1)" stroke-width=".9" transform="rotate(180 160 340)"/>
+<polygon points="160,330 210,370 110,370" fill="none" stroke="rgba(31,143,139,.08)" stroke-width=".8" transform="rotate(180 160 350)"/>
+<circle cx="160" cy="176" r="4" fill="#1f8f8b" opacity=".8"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">V · 02</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Video</div>
+                <div class="mcf-name">Naifu (Former teacher in the UK) — 02</div>
+                <div class="mcf-quote">&#8220;The urgent need to address growth challenges in our society.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Video</div>
+                <div class="mch-name">Naifu (Former teacher in the UK) — 02</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">The urgent need to address growth challenges in our society.</div>
+                <div class="mch-speaker">Naifu</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  <source src="asset/video/Interview-video-3.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- V03 -->
+          <div class="mcard mcard--video" data-id="V03" data-kind="video"
+               style="--cx:260px; --cy:160px; --r:10deg; z-index:10;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="gv3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".18"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#gv3)"/>
+<line x1="80" y1="100" x2="160" y2="180" stroke="rgba(31,143,139,.22)" stroke-width=".9"/>
+<line x1="240" y1="100" x2="160" y2="180" stroke="rgba(31,143,139,.22)" stroke-width=".9"/>
+<line x1="80" y1="100" x2="160" y2="60" stroke="rgba(31,143,139,.18)" stroke-width=".9"/>
+<line x1="240" y1="100" x2="160" y2="60" stroke="rgba(31,143,139,.18)" stroke-width=".9"/>
+<line x1="80" y1="100" x2="40" y2="200" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
+<line x1="240" y1="100" x2="280" y2="200" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
+<line x1="160" y1="180" x2="80" y2="300" stroke="rgba(31,143,139,.18)" stroke-width=".9"/>
+<line x1="160" y1="180" x2="240" y2="300" stroke="rgba(31,143,139,.18)" stroke-width=".9"/>
+<line x1="160" y1="180" x2="160" y2="300" stroke="rgba(31,143,139,.28)" stroke-width="1"/>
+<line x1="40" y1="200" x2="80" y2="300" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="280" y1="200" x2="240" y2="300" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<line x1="80" y1="300" x2="160" y2="380" stroke="rgba(31,143,139,.14)" stroke-width=".9"/>
+<line x1="240" y1="300" x2="160" y2="380" stroke="rgba(31,143,139,.14)" stroke-width=".9"/>
+<line x1="160" y1="300" x2="160" y2="380" stroke="rgba(31,143,139,.2)" stroke-width=".9"/>
+<circle cx="160" cy="60" r="3" fill="rgba(31,143,139,.5)"/>
+<circle cx="80" cy="100" r="3.5" fill="rgba(31,143,139,.55)"/>
+<circle cx="240" cy="100" r="3.5" fill="rgba(31,143,139,.55)"/>
+<circle cx="40" cy="200" r="2.5" fill="rgba(255,255,255,.15)"/>
+<circle cx="280" cy="200" r="2.5" fill="rgba(255,255,255,.15)"/>
+<circle cx="160" cy="180" r="6" fill="rgba(31,143,139,.2)" stroke="#1f8f8b" stroke-width="1.4"/>
+<circle cx="160" cy="180" r="2" fill="#1f8f8b"/>
+<circle cx="80" cy="300" r="3.5" fill="rgba(31,143,139,.45)"/>
+<circle cx="240" cy="300" r="3.5" fill="rgba(31,143,139,.45)"/>
+<circle cx="160" cy="300" r="3" fill="rgba(31,143,139,.55)"/>
+<circle cx="160" cy="380" r="3" fill="rgba(31,143,139,.35)"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">V · 03</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Video</div>
+                <div class="mcf-name">Naifu (Former teacher in the UK) — 03</div>
+                <div class="mcf-quote">&#8220;The lack of social skills in education and the priority placed on academic achievement.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Video</div>
+                <div class="mch-name">Naifu (Former teacher in the UK) — 03</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">The lack of social skills in education and the priority placed on academic achievement.</div>
+                <div class="mch-speaker">Naifu</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  <source src="asset/video/Interview-video-2.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- V04 -->
+          <div class="mcard mcard--video" data-id="V04" data-kind="video"
+               style="--cx:470px; --cy:-90px; --r:-20deg; z-index:11;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="gv4" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".22"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></linearGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#gv4)"/>
+<path d="M24,80 C80,60 240,80 296,60" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<path d="M24,130 C80,100 200,150 296,110" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<path d="M24,180 C60,155 140,200 296,170" fill="none" stroke="rgba(31,143,139,.18)" stroke-width="1"/>
+<path d="M24,220 C50,205 140,235 296,220" fill="none" stroke="rgba(31,143,139,.32)" stroke-width="1.2"/>
+<path d="M24,240 C80,230 200,252 296,240" fill="none" stroke="rgba(31,143,139,.48)" stroke-width="1.4"/>
+<path d="M24,260 C80,252 200,270 296,260" fill="none" stroke="rgba(31,143,139,.32)" stroke-width="1.2"/>
+<path d="M24,300 C80,285 180,315 296,295" fill="none" stroke="rgba(31,143,139,.18)" stroke-width="1"/>
+<path d="M24,350 C100,330 220,360 296,340" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".8"/>
+<path d="M24,400 C100,380 220,405 296,390" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".7"/>
+<circle cx="160" cy="240" r="24" fill="none" stroke="rgba(31,143,139,.28)" stroke-width="1.3"/>
+<circle cx="160" cy="240" r="12" fill="none" stroke="rgba(31,143,139,.48)" stroke-width="1.4"/>
+<circle cx="160" cy="240" r="4" fill="#1f8f8b" opacity=".85"/>
+<line x1="136" y1="240" x2="184" y2="240" stroke="rgba(31,143,139,.45)" stroke-width="1.2"/>
+<line x1="160" y1="216" x2="160" y2="264" stroke="rgba(31,143,139,.45)" stroke-width="1.2"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">V · 04</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Video</div>
+                <div class="mcf-name">Nanxuan (Somatic therapist) — 01</div>
+                <div class="mcf-quote">&#8220;Choosing a niche career when feeling lost.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Video</div>
+                <div class="mch-name">Nanxuan (Somatic therapist) — 01</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">Choosing a niche career when feeling lost.</div>
+                <div class="mch-speaker">Nanxuan</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  <source src="asset/video/Interview-video-4.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+          <!-- V05 -->
+          <div class="mcard mcard--video" data-id="V05" data-kind="video"
+               style="--cx:-90px; --cy:-55px; --r:5deg; z-index:12;">
+            <!-- Art background -->
+            <div class="mcard-art"><svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<defs><radialGradient id="gv5" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1f8f8b" stop-opacity=".2"/><stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/></radialGradient></defs>
+<rect width="320" height="480" fill="#0c0c0c"/><rect width="320" height="480" fill="url(#gv5)"/>
+<circle cx="120" cy="220" r="30" fill="none" stroke="rgba(31,143,139,.22)" stroke-width="1"/>
+<circle cx="120" cy="220" r="60" fill="none" stroke="rgba(31,143,139,.16)" stroke-width=".9"/>
+<circle cx="120" cy="220" r="90" fill="none" stroke="rgba(31,143,139,.1)" stroke-width=".8"/>
+<circle cx="120" cy="220" r="120" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<circle cx="200" cy="260" r="30" fill="none" stroke="rgba(31,143,139,.22)" stroke-width="1"/>
+<circle cx="200" cy="260" r="60" fill="none" stroke="rgba(31,143,139,.16)" stroke-width=".9"/>
+<circle cx="200" cy="260" r="90" fill="none" stroke="rgba(31,143,139,.1)" stroke-width=".8"/>
+<circle cx="200" cy="260" r="120" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".7"/>
+<circle cx="160" cy="240" r="8" fill="rgba(31,143,139,.15)" stroke="rgba(31,143,139,.7)" stroke-width="1.3"/>
+<circle cx="160" cy="240" r="2.5" fill="#1f8f8b"/>
+<line x1="0" y1="80" x2="320" y2="80" stroke="rgba(255,255,255,.03)" stroke-width=".6"/>
+<line x1="0" y1="400" x2="320" y2="400" stroke="rgba(255,255,255,.03)" stroke-width=".6"/>
+<text x="160" y="466" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.2)" font-family="monospace" letter-spacing="5">V · 05</text>
+</svg></div>
+            <!-- Resting face -->
+            <div class="mcard-face">
+              <div class="mcard-spacer"></div>
+              <div class="mcard-foot">
+                <div class="mcf-tag">Interview · Video</div>
+                <div class="mcf-name">Nanxuan (Somatic therapist) — 02</div>
+                <div class="mcf-quote">&#8220;Working as a somatic therapist gives me a sense of purpose.&#8221;</div>
+              </div>
+            </div>
+            <!-- Hover overlay (audio: shows quote + player; video: shows play hint) -->
+            <div class="mcard-hover">
+              <div class="mch-head">
+                <div class="mch-tag">Interview · Video</div>
+                <div class="mch-name">Nanxuan (Somatic therapist) — 02</div>
+              </div>
+              <div class="mch-quote">
+                <div class="mch-qt">Working as a somatic therapist gives me a sense of purpose.</div>
+                <div class="mch-speaker">Nanxuan</div>
+              </div>
+              <div class="mch-player">
+                <div class="mch-wave"><span style="height:14px"></span><span style="height:28px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:18px"></span><span style="height:42px"></span><span style="height:50px"></span><span style="height:34px"></span><span style="height:24px"></span><span style="height:44px"></span><span style="height:30px"></span><span style="height:20px"></span><span style="height:38px"></span><span style="height:26px"></span><span style="height:22px"></span><span style="height:16px"></span></div>
+                <div class="mch-player-rule"></div>
+                <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  <source src="asset/video/Interview-video-5.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!-- Cancel button (only shown in playing state) -->
+            <button class="mcard-cancel" type="button" aria-label="Stop playing">✕</button>
+          </div>
+      </div>
+      <!-- Legend hint -->
+      <div class="mp-legend" id="mp-legend">
+        <span class="mp-legend-item">◀▶ Drag to explore</span>
+        <span class="mp-legend-sep">·</span>
+        <span class="mp-legend-item">Click to play</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FRAGMENT POPUP ══ -->
+<section class="popup" id="fragment-popup" aria-hidden="true">
+  <div class="popup-panel">
+    <div class="popup-head">
+      <div class="popup-title">Send a fragment</div>
+      <button class="close-btn" type="button" data-close>Close ✕</button>
+    </div>
+    <div class="popup-content" style="padding:0;overflow:hidden;">
+      <div class="fragment-layout">
+        <div class="fragment-poster">
+          <img draggable="false" oncontextmenu="return false" src="asset/send-a-fragment/SB-poster-en.png" alt="Still Becoming poster"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="fragment-poster-fallback" style="display:none;">
+            <span><em>Still</em><br>Becoming</span>
+            <span style="font-size:.65rem;letter-spacing:.2em;color:var(--metal);">Her Metaphor Lab</span>
+          </div>
+        </div>
+        <div class="fragment-form-area">
+          <div class="fragment-intro">
+            <p>You can either contact us or write us anonymous messages.</p>
+            <a href="mailto:iam.yihui@gmail.com" class="btn btn-fill"
+              style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">✉ Send an email</a>
+          </div>
+          <div class="fragment-divider">
+            <span class="fragment-divider-label">or — Send a fragment anonymously</span>
+          </div>
+          <form class="fragment-form" id="fragment-form-el">
+            <label>Story fragment
+              <textarea id="frag-story" placeholder="A sentence. A refusal. A sound you want held." required></textarea>
+            </label>
+            <div>
+              <label style="margin-bottom:8px;display:block;">Attach a file (optional)</label>
+              <div class="file-attach-row">
+                <button class="btn" type="button" onclick="document.getElementById('frag-file').click()">Attach file</button>
+                <span class="file-attach-label" id="file-label">No file chosen</span>
+              </div>
+              <input type="file" id="frag-file"
+                onchange="document.getElementById('file-label').textContent=this.files[0]?this.files[0].name:'No file chosen'">
+            </div>
+            <label>Signature (optional)
+              <input type="text" id="frag-sig" placeholder="A name, a symbol, or leave blank">
+            </label>
+            <p class="safety-note">⚠ Safety note: use a VPN before submitting.<br>
+              No names, addresses, or workplace details.<br>
+              All submissions are anonymized by default.</p>
+            <div><button class="btn btn-fill" type="button" id="submit-voice">Transmit</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  /* ── POPUP OPEN / CLOSE ── */
+  function openPopup(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  }
+  function closePopup(panel){
+    panel.querySelectorAll('audio,video').forEach(function(m){ m.pause(); });
+    panel.setAttribute('aria-hidden','true');
+    var anyOpen=Array.prototype.some.call(
+      document.querySelectorAll('.popup'),
+      function(p){return p.getAttribute('aria-hidden')==='false';}
+    );
+    if(!anyOpen)document.body.style.overflow='';
+  }
+  document.querySelectorAll('[data-open]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      openPopup(btn.getAttribute('data-open'));
+      /* re-layout galaxy cards after popup renders */
+      if(btn.getAttribute('data-open') === 'media-popup'){
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            var e = new Event('resize');
+            window.dispatchEvent(e);
+          });
+        });
+      }
+    });
+  });
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click',function(){closePopup(btn.closest('.popup'));});
+  });
+  document.querySelectorAll('.popup').forEach(function(popup){
+    popup.addEventListener('click',function(e){if(e.target===popup)closePopup(popup);});
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    document.querySelectorAll('.popup').forEach(function(p){
+      if(p.getAttribute('aria-hidden')==='false')closePopup(p);
+    });
+  });
+
+  /* ── EXCLUSIVE PLAYBACK ── pause all others when one starts ── */
+  document.addEventListener('play', function(e){
+    var active = e.target;
+    document.querySelectorAll('audio, video').forEach(function(m){
+      if(m !== active && !m.paused) m.pause();
+    });
+  }, true);
+
+  /* ── IS-PLAYING CLASS ─────────────────────────────────────────
+     Audio cards: add .is-playing to .mc so hover overlay stays visible.
+     Video cards: add .is-playing to .vc so hover styles persist.
+  ─────────────────────────────────────────────────────────────── */
+  function bindMediaCard(mediaEl, cardEl) {
+    mediaEl.addEventListener('play', function() {
+      cardEl.classList.add('is-playing');
+    });
+    mediaEl.addEventListener('pause', function() {
+      cardEl.classList.remove('is-playing');
+    });
+    mediaEl.addEventListener('ended', function() {
+      cardEl.classList.remove('is-playing');
+    });
+  }
+
+  // Audio cards
+  document.querySelectorAll('.mc').forEach(function(card){
+    var audio = card.querySelector('audio');
+    if(audio) bindMediaCard(audio, card);
+  });
+
+  // Video cards
+  document.querySelectorAll('.vc').forEach(function(card){
+    var video = card.querySelector('video');
+    if(video) bindMediaCard(video, card);
+  });
+
+  /* ── NON-DOWNLOADABLE IMAGES ── */
+  document.addEventListener('contextmenu', function(e){
+    if(e.target.tagName === 'IMG') e.preventDefault();
+  });
+
+  /* ── FRAGMENT FORM ── */
+  document.getElementById('submit-voice').addEventListener('click',function(){
+    var story=(document.getElementById('frag-story').value||'').trim();
+    var sig=(document.getElementById('frag-sig').value||'').trim();
+    if(!story){alert('Please write a story fragment before transmitting.');return;}
+    var subject=encodeURIComponent('Fragment — Still Becoming');
+    var body=encodeURIComponent(
+      'Story fragment:\n'+story+
+      (sig?'\n\nSignature: '+sig:'\n\n[Anonymous]')+
+      '\n\n—\nSent via Her Metaphor Lab · Still Becoming'
+    );
+    window.location.href='mailto:iam.yihui@gmail.com?subject='+subject+'&body='+body;
+    this.textContent='Received ◆ Thank you';
+    this.disabled=true;
+  });
+})();
+
+  /* ══ MEDIA DECK — galaxy layout, drag, hover, play ══════════════════════ */
+  (function(){
+    var stage = document.getElementById('mp-stage');
+    var deck  = document.getElementById('mp-deck');
+    var veil  = document.getElementById('mp-veil');
+    if(!stage || !deck) return;
+
+    var CARD_W = 320, CARD_H = 480;
+    var playingCard = null;
+
+    /* ── Galaxy layout: position each card using --cx/--cy from stage centre ── */
+    function layoutCards() {
+      var sw = stage.offsetWidth;
+      var sh = stage.offsetHeight;
+      var originLeft = sw / 2 - CARD_W / 2;  /* left that perfectly centres a card */
+      var originTop  = sh / 2 - CARD_H / 2;
+
+      deck.querySelectorAll('.mcard').forEach(function(card){
+        if(card.classList.contains('is-playing')) return; /* playing card snapped separately */
+        var st = getComputedStyle(card);
+        var cx = parseFloat(st.getPropertyValue('--cx')) || 0;
+        var cy = parseFloat(st.getPropertyValue('--cy')) || 0;
+        /* only reset if not being dragged */
+        if(!card._dragging) {
+          card.style.left = (originLeft + cx) + 'px';
+          card.style.top  = (originTop  + cy) + 'px';
+        }
+      });
+    }
+
+    layoutCards();
+    window.addEventListener('resize', layoutCards);
+
+    /* ── Drag logic ─────────────────────────────────────────────────────── */
+    deck.querySelectorAll('.mcard').forEach(function(card){
+      var startX, startY, startLeft, startTop, didDrag = false;
+      card._dragging = false;
+
+      card.addEventListener('pointerdown', function(e){
+        if(card.classList.contains('is-playing')) return;
+        if(e.target.closest('.mcard-cancel')) return;
+        card._dragging = true; didDrag = false;
+        startX = e.clientX; startY = e.clientY;
+        startLeft = parseFloat(card.style.left) || 0;
+        startTop  = parseFloat(card.style.top)  || 0;
+        card.setPointerCapture(e.pointerId);
+        card.classList.add('dragging');
+        card.style.zIndex = 100;
+        e.preventDefault();
+      });
+
+      card.addEventListener('pointermove', function(e){
+        if(!card._dragging) return;
+        var dx = e.clientX - startX;
+        var dy = e.clientY - startY;
+        if(Math.abs(dx) > 4 || Math.abs(dy) > 4) didDrag = true;
+        card.style.left = (startLeft + dx) + 'px';
+        card.style.top  = (startTop  + dy) + 'px';
+      });
+
+      card.addEventListener('pointerup', function(e){
+        if(!card._dragging) return;
+        card._dragging = false;
+        card.classList.remove('dragging');
+        card.style.zIndex = '';
+        if(!didDrag) triggerPlay(card);
+      });
+
+      var cancelBtn = card.querySelector('.mcard-cancel');
+      if(cancelBtn){
+        cancelBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          stopPlaying();
+        });
+      }
+    });
+
+    /* ── Play mode ───────────────────────────────────────────────────────── */
+    function snapToCenter(card) {
+      var sw = stage.offsetWidth;
+      var sh = stage.offsetHeight;
+      card.style.left = (sw / 2 - CARD_W / 2) + 'px';
+      card.style.top  = (sh / 2 - CARD_H / 2) + 'px';
+      /* smooth transition for snap */
+      card.style.transition = 'left .45s cubic-bezier(.34,1.2,.64,1), top .45s cubic-bezier(.34,1.2,.64,1), box-shadow .3s ease';
+    }
+
+    function triggerPlay(card) {
+      if(playingCard === card) return;
+      if(playingCard) stopPlaying(false);
+      playingCard = card;
+      snapToCenter(card);
+      card.classList.add('is-playing');
+      stage.classList.add('has-playing');
+      document.querySelectorAll('audio, video').forEach(function(m){
+        if(!card.contains(m)) m.pause();
+      });
+      var media = card.querySelector('audio, video');
+      if(media){
+        setTimeout(function(){ media.play().catch(function(){}); }, 100);
+        media.addEventListener('ended', function onEnd(){
+          media.removeEventListener('ended', onEnd);
+          stopPlaying();
+        });
+      }
+    }
+
+    function stopPlaying(pause) {
+      if(!playingCard) return;
+      var card = playingCard; playingCard = null;
+      var media = card.querySelector('audio, video');
+      if(media && pause !== false) media.pause();
+      /* restore card's natural transition before removing is-playing */
+      card.style.transition = '';
+      card.classList.remove('is-playing');
+      stage.classList.remove('has-playing');
+      /* re-layout so it returns to galaxy position */
+      setTimeout(layoutCards, 10);
+    }
+
+    veil.addEventListener('click', function(){ stopPlaying(); });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && playingCard) stopPlaying();
+    });
+
+    var mediaPopup = document.getElementById('media-popup');
+    if(mediaPopup){
+      new MutationObserver(function(){
+        if(mediaPopup.getAttribute('aria-hidden') === 'true') stopPlaying();
+      }).observe(mediaPopup, { attributes:true, attributeFilter:['aria-hidden'] });
+    }
+  })();
+</script>
+</body>
+</html>
