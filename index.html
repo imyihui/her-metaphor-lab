@@ -413,11 +413,104 @@ img {
 .safety-note { font-size:9.5px; line-height:1.7; color:var(--muted);
   border-left:2px solid var(--metal); padding-left:10px; }
 
+/* ─── MOBILE ≤ 899px ──────────────────────────────────────── */
 @media (max-width:899px) {
-  .hero-grid { padding:16px; gap:16px; }
-  h1 { font-size:clamp(1.3rem,7vw,2.5rem); }
-  .fragment-layout { flex-direction:column; }
-  .fragment-poster { width:100%; height:190px; flex:0 0 190px; border-right:none; border-bottom:2px solid var(--ink); }
+  /* Allow scroll — hero content can be taller than viewport */
+  html, body { overflow: auto; height: auto; }
+  .page-shell { height: auto; min-height: 100dvh; }
+  .hero { flex: none; overflow: visible; }
+
+  .hero-grid { padding: 14px 16px; gap: 18px; align-items: start; }
+  h1 { font-size: clamp(1.5rem, 7.5vw, 2.8rem); margin-bottom: 10px; }
+  .hero-brand img   { width: 42px; height: 42px; }
+  .hero-brand-name  { font-size: 10px; }
+  .hero-brand       { margin-bottom: 12px; }
+  .hero-lede        { margin-bottom: 14px; }
+  .hero-lede p      { font-size: 11px; }
+  .hero-lede p+p    { font-size: 10px; }
+
+  .hero-aside    { gap: 8px; }
+  .cover-wrapper { flex: 0 0 auto; }
+  .zine-cover    { max-height: 200px; object-fit: contain; }
+  .audio-block   { padding: 9px 12px; }
+  .audio-row     { flex-wrap: wrap; gap: 8px; }
+  .audio-quote   { font-size: 9.5px; flex: 1 1 100%; }
+  .audio-row .btn { align-self: flex-start; }
+
+  .ticker       { height: 36px; }
+  .ticker-item  { font-size: 9px; padding: 0 18px; }
+
+  .btn, .btn-fill { padding: 11px 18px; }
+
+  /* Popup bottom sheet */
+  .popup { padding: 0; align-items: flex-end; }
+  .popup-panel {
+    width: 100%;
+    height: 95dvh;
+    border-radius: 14px 14px 0 0;
+    border-left: none; border-right: none; border-bottom: none;
+  }
+  .popup-head { padding: 12px 16px; }
+  .popup-title { font-size: 9px; }
+
+  /* Fragment popup */
+  .fragment-layout  { flex-direction: column; height: auto; overflow: auto; }
+  .fragment-poster  { width: 100%; height: 130px; flex: 0 0 130px; border-right: none; border-bottom: 2px solid var(--ink); }
+  .fragment-form-area { padding: 18px 16px 32px; }
+  .fragment-form textarea,
+  .fragment-form input[type="text"] { font-size: 16px; }
+  .fragment-form label  { font-size: 9px; }
+  .fragment-form        { gap: 12px; }
+  .fragment-intro p     { font-size: 11.5px; line-height: 1.65; }
+  .safety-note          { font-size: 9px; }
+
+  /* Archive */
+  .archive-scroll   { padding: 28px 16px 48px; }
+  .archive-intro    { margin-bottom: 30px; }
+  .archive-intro p  { font-size: 11px; }
+  .archive-img-cover, .archive-img-bottom { width: 100%; }
+
+  /* Media popup: vertical scrollable list */
+  .mp-stage {
+    overflow-y: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mp-deck {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 12px 36px;
+    width: 100%;
+  }
+  .mcard {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    flex-shrink: 0;
+    width: min(var(--card-w), calc(100vw - 32px));
+    cursor: default;
+    transform: none !important;
+  }
+  .mcard:hover:not(.dragging):not(.is-playing) {
+    transform: translateY(-4px) scale(1.015) !important;
+  }
+  .mp-veil   { display: none; }
+  .mp-legend { display: none; }
+}
+
+/* ─── MOBILE small phones ≤ 480px ─────────────────────────── */
+@media (max-width:480px) {
+  .hero-grid     { padding: 12px; gap: 14px; }
+  h1             { font-size: clamp(1.35rem, 8.5vw, 2rem); line-height: .93; }
+  .zine-cover    { max-height: 150px; }
+  .zine-label    { font-size: 7.5px; margin-bottom: 4px; }
+  .audio-quote   { font-size: 9px; }
+  .popup-panel   { height: 98dvh; }
+  .fragment-form-area { padding: 14px 14px 28px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1734,20 +1827,42 @@ img {
     if(e.target.tagName === 'IMG') e.preventDefault();
   });
 
-  /* ── FRAGMENT FORM ── */
-  document.getElementById('submit-voice').addEventListener('click',function(){
-    var story=(document.getElementById('frag-story').value||'').trim();
-    var sig=(document.getElementById('frag-sig').value||'').trim();
-    if(!story){alert('Please write a story fragment before transmitting.');return;}
-    var subject=encodeURIComponent('Fragment — Still Becoming');
-    var body=encodeURIComponent(
-      'Story fragment:\n'+story+
-      (sig?'\n\nSignature: '+sig:'\n\n[Anonymous]')+
-      '\n\n—\nSent via Her Metaphor Lab · Still Becoming'
-    );
-    window.location.href='mailto:iam.yihui@gmail.com?subject='+subject+'&body='+body;
-    this.textContent='Received ◆ Thank you';
-    this.disabled=true;
+  /* ── FRAGMENT FORM — Web3Forms anonymous AJAX ── */
+  document.getElementById('submit-voice').addEventListener('click', async function(){
+    var story = (document.getElementById('frag-story').value||'').trim();
+    var sig   = (document.getElementById('frag-sig').value||'').trim();
+    if(!story){ alert('Please write a story fragment before transmitting.'); return; }
+    var btn = this;
+    btn.textContent = 'Transmitting…';
+    btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('access_key', '03ae6589-a504-47b7-80c7-ca89fa510286');
+    fd.append('subject',    'Fragment — Still Becoming');
+    fd.append('message',    story);
+    fd.append('name',       sig || '[Anonymous]');
+    var fileInput = document.getElementById('frag-file');
+    if(fileInput.files[0]) fd.append('attachment', fileInput.files[0]);
+
+    try {
+      var res  = await fetch('https://api.web3forms.com/submit', { method:'POST', body:fd });
+      var data = await res.json();
+      if(data.success){
+        btn.textContent = 'Received ◆ Thank you';
+        document.getElementById('frag-story').value = '';
+        document.getElementById('frag-sig').value   = '';
+        document.getElementById('file-label').textContent = 'No file chosen';
+        fileInput.value = '';
+      } else {
+        btn.textContent = 'Transmit';
+        btn.disabled = false;
+        alert('Something went wrong — please try again.');
+      }
+    } catch(e) {
+      btn.textContent = 'Transmit';
+      btn.disabled = false;
+      alert('Network error — please check your connection and try again.');
+    }
   });
 })();
 
@@ -1763,6 +1878,7 @@ img {
 
     /* ── Galaxy layout: position each card using --cx/--cy from stage centre ── */
     function layoutCards() {
+      if(window.innerWidth <= 899) return;
       var sw = stage.offsetWidth;
       var sh = stage.offsetHeight;
       var originLeft = sw / 2 - CARD_W / 2;  /* left that perfectly centres a card */
@@ -1819,6 +1935,13 @@ img {
         if(!didDrag) triggerPlay(card);
       });
 
+      /* Mobile: tap to play */
+      card.addEventListener('click', function(e){
+        if(window.innerWidth > 899) return;
+        if(e.target.closest('.mcard-cancel')) return;
+        if(!card.classList.contains('is-playing')) triggerPlay(card);
+      });
+
       var cancelBtn = card.querySelector('.mcard-cancel');
       if(cancelBtn){
         cancelBtn.addEventListener('click', function(e){
@@ -1830,6 +1953,7 @@ img {
 
     /* ── Play mode ───────────────────────────────────────────────────────── */
     function snapToCenter(card) {
+      if(window.innerWidth <= 899) return;
       var sw = stage.offsetWidth;
       var sh = stage.offsetHeight;
       card.style.left = (sw / 2 - CARD_W / 2) + 'px';
