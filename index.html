@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Her Metaphor Lab — Still Becoming</title>
 <link rel="icon" href="asset/favicon/hermetaphorlab-favicon.svg" type="image/svg+xml"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* ─── TOKENS ─────────────────────────────────────────────── */
 :root {
@@ -13,6 +14,7 @@
   --accent: #1f8f8b; --metal: #6f6a63;
   --scan: rgba(12,12,12,.04); --ticker-h: 44px;
   --bdepth: 3px;
+  --handwriting: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,7 +80,7 @@ h1 span { display:block; }
   font-size:10.5px; font-style:italic; color:var(--metal); }
 
 /* ─── BUTTONS ── push-depth, teal hover ─────────────────── */
-.hero-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.hero-actions { display:flex; flex-wrap:wrap; gap:10px; padding-bottom: calc(var(--bdepth) + 2px); }
 .btn {
   border:2px solid var(--ink); background:var(--paper); color:var(--ink);
   padding:9px 16px; font:inherit; font-size:8.5px;
@@ -117,16 +119,17 @@ h1 span { display:block; }
   display: flex; flex-direction: column;
   overflow: visible;
 }
-.zine-label { font-size:8.5px; letter-spacing:.22em; text-transform:uppercase;
-  color:var(--metal); margin-bottom:7px; flex-shrink:0; }
+.zine-label { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink); opacity:.8; margin-bottom:5px; flex-shrink:0; }
 
 /* button — let image set the size naturally */
 .cover-button {
   border:none; background:transparent; cursor:pointer; padding:0;
   flex:1; min-height:0;
-  display:flex; align-items:flex-start;   /* image anchors to top, shadow follows */
+  display:flex; align-items:flex-start;
   transition: filter .18s;
   overflow: visible;
+  position: relative;
 }
 .cover-button:hover { filter:brightness(.93); }
 .cover-button:active { filter:brightness(.88); }
@@ -167,13 +170,13 @@ h1 span { display:block; }
   background-image:radial-gradient(circle,rgba(12,12,12,.06) 1px,transparent 1px);
   background-size:7px 7px; pointer-events:none; }
 .audio-block > * { position:relative; z-index:1; }
-.audio-block .label { font-size:8.5px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--metal); margin-bottom:8px; }
+.audio-block .label { font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink); opacity:.82; margin-bottom:8px; }
 
 /* 2. AUDIO FIX — correct MIME for .aac */
 .audio-block audio {
   width:100%; height:28px; display:block;
-  filter:grayscale(1) contrast(1.1);
+  filter: brightness(1.1) sepia(.55) hue-rotate(138deg) saturate(2.4);
 }
 
 .audio-row { display:flex; align-items:center; gap:12px; margin-top:9px; }
@@ -394,12 +397,12 @@ img {
 .fragment-poster-fallback span em { color:var(--accent); font-style:normal; }
 .fragment-form-area { flex:1; overflow-y:auto; padding:28px 32px; }
 .fragment-intro { margin-bottom:18px; }
-.fragment-intro p { font-size:12px; line-height:1.75; color:var(--muted); margin-bottom:12px; }
+.fragment-intro p { font-size:12px; line-height:1.75; color:var(--ink); opacity:.78; margin-bottom:12px; }
 .fragment-divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
 .fragment-divider::before,.fragment-divider::after { content:''; flex:1; height:1px; background:rgba(12,12,12,.16); }
-.fragment-divider-label { font-size:8px; letter-spacing:.26em; text-transform:uppercase; color:var(--metal); white-space:nowrap; }
+.fragment-divider-label { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); opacity:.75; white-space:nowrap; }
 .fragment-form { display:grid; gap:14px; }
-.fragment-form label { font-size:8.5px; text-transform:uppercase; letter-spacing:.18em; display:block; color:var(--metal); }
+.fragment-form label { font-size:12px; text-transform:uppercase; letter-spacing:.12em; display:block; color:var(--ink); opacity:.82; }
 .fragment-form textarea,.fragment-form input[type="text"] {
   display:block; width:100%; margin-top:6px;
   border:2px solid var(--ink); background:var(--paper);
@@ -410,7 +413,7 @@ img {
 .file-attach-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
 #frag-file { display:none; }
 .file-attach-label { font-size:8.5px; letter-spacing:.12em; color:var(--metal); }
-.safety-note { font-size:9.5px; line-height:1.7; color:var(--muted);
+.safety-note { font-size:12px; line-height:1.7; color:var(--ink); opacity:.72;
   border-left:2px solid var(--metal); padding-left:10px; }
 
 /* ─── MOBILE ≤ 899px ──────────────────────────────────────── */
@@ -459,10 +462,10 @@ img {
   .fragment-form-area { padding: 18px 16px 32px; }
   .fragment-form textarea,
   .fragment-form input[type="text"] { font-size: 16px; }
-  .fragment-form label  { font-size: 9px; }
+  .fragment-form label  { font-size: 12px; }
   .fragment-form        { gap: 12px; }
   .fragment-intro p     { font-size: 11.5px; line-height: 1.65; }
-  .safety-note          { font-size: 9px; }
+  .safety-note          { font-size: 12px; }
 
   /* Archive */
   .archive-scroll   { padding: 28px 16px 48px; }
@@ -519,40 +522,35 @@ img {
    Interaction: drag to spread, click to play, veil on play.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Panel override for media popup: dark background */
+/* Media popup — matches homepage paper palette */
 #media-popup .popup-panel {
-  background: #111210;
-  border-color: rgba(255,255,255,.12);
+  background: var(--paper);
+  border-color: var(--ink);
 }
 #media-popup .popup-head {
-  background: #0c0c0c;
-  border-bottom-color: rgba(255,255,255,.1);
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
 }
-#media-popup .popup-title { color: rgba(234,232,226,.55); }
-/* ── Close btn on dark popup ────────────────────────────────────────
-   Static : subtle teal-tinted bg + crisp teal border + light text
-   Hover  : solid teal fill, white text, brighter border
-   Active : darker teal press, slight sink
-   ─────────────────────────────────────────────────────────────── */
+#media-popup .popup-title { color: var(--ink); }
 #media-popup .close-btn {
-  background: rgba(31,143,139,.12);
-  border: 1.5px solid rgba(31,143,139,.75);
-  color: rgba(234,232,226,.88);
-  box-shadow: none;
-  letter-spacing: .22em;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  box-shadow: 0 var(--bdepth) 0 0 var(--ink);
+  letter-spacing: .14em;
 }
 #media-popup .close-btn:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 0 3px rgba(31,143,139,.22);
+  color: var(--paper);
+  box-shadow: none;
 }
 #media-popup .close-btn:active {
-  background: #157370;
-  border-color: #157370;
-  color: #fff;
-  transform: translateY(1px);
-  box-shadow: none;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+  box-shadow: 0 1px 0 0 var(--ink);
+  transform: translateY(2px);
 }
 
 /* Stage: fills the popup body, centres the deck */
@@ -585,12 +583,12 @@ img {
   position: absolute; bottom: 18px; left: 0; right: 0;
   display: flex; justify-content: center; align-items: center; gap: 10px;
   font-size: 7.5px; letter-spacing: .26em; text-transform: uppercase;
-  color: rgba(255,255,255,.2);
+  color: rgba(12,12,12,.38);
   pointer-events: none;
   transition: opacity .4s;
 }
 .mp-stage.has-playing .mp-legend { opacity: 0; }
-.mp-legend-sep { color: rgba(31,143,139,.45); }
+.mp-legend-sep { color: var(--accent); }
 
 /* ── CARD ── 320×480px, 16px radius ─────────────────────────────── */
 :root { --card-w: 320px; --card-h: 480px; --card-r: 16px; }
@@ -857,6 +855,167 @@ img {
   :root { --card-w: 240px; --card-h: 360px; --card-r: 12px; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════
+   MASTER OVERRIDES — paper theme, Caveat hints, card redesign
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Zine subtitle & desktop hover hint ─────────────────────────── */
+.zine-sub {
+  font-size: 10px; letter-spacing: .10em; font-style: italic;
+  color: var(--muted); opacity: .8;
+  margin-bottom: 7px; flex-shrink: 0;
+}
+.zine-hover-hint {
+  display: none; /* shown only on desktop hover via CSS */
+  position: absolute;
+  bottom: 14px; left: 50%; transform: translateX(-50%);
+  font-family: var(--handwriting);
+  font-size: 16px; font-weight: 600;
+  color: var(--paper);
+  background: rgba(12,12,12,.58);
+  backdrop-filter: blur(6px);
+  padding: 5px 18px; border-radius: 24px;
+  pointer-events: none; white-space: nowrap; z-index: 2;
+}
+/* Desktop: show on hover */
+@media (min-width: 900px) {
+  .cover-button:hover .zine-hover-hint { display: block; }
+}
+/* Mobile: always visible */
+@media (max-width: 899px) {
+  .zine-hover-hint {
+    display: block;
+    font-size: 14px;
+    bottom: 10px; padding: 4px 14px;
+  }
+}
+
+/* ── Mobile hint bar inside media popup ─────────────────────────── */
+.mp-hint-bar {
+  display: none; /* JS shows on mobile */
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(234,232,226,.92);
+  backdrop-filter: blur(8px);
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 28px;
+  text-align: center;
+}
+.mp-hint-bar.visible { display: flex; }
+.mp-hint-bar-scroll {
+  font-family: var(--handwriting);
+  font-size: 26px; font-weight: 600;
+  color: var(--ink); letter-spacing: .02em;
+  line-height: 1.3;
+}
+.mp-hint-bar-play {
+  font-family: var(--handwriting);
+  font-size: 20px; color: var(--muted);
+  letter-spacing: .01em;
+}
+.mp-hint-bar-tap {
+  margin-top: 18px;
+  font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--metal); opacity: .7;
+}
+
+/* ── Card: invert SVG art + paper-toned overlays ─────────────────── */
+
+/* Flip dark SVG art to paper-light */
+.mcard-art svg {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Card shadows: lighter for paper context */
+.mcard {
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.10),
+    0 0 0 1.5px rgba(31,143,139,.55);
+}
+.mcard.dragging {
+  box-shadow:
+    0 28px 60px rgba(0,0,0,.24), 0 4px 14px rgba(0,0,0,.14),
+    0 0 0 2px var(--accent), 0 0 20px rgba(31,143,139,.12);
+}
+.mcard:hover:not(.dragging):not(.is-playing) {
+  box-shadow:
+    0 22px 52px rgba(0,0,0,.20), 0 4px 14px rgba(0,0,0,.12),
+    0 0 0 2px var(--accent), 0 0 18px rgba(31,143,139,.10);
+}
+.mcard.is-playing {
+  box-shadow:
+    0 32px 72px rgba(0,0,0,.20),
+    0 0 0 2px var(--accent), 0 0 28px rgba(31,143,139,.12);
+}
+
+/* Dot texture: dark on light */
+.mcard::before {
+  background-image: radial-gradient(circle, rgba(12,12,12,.055) 1px, transparent 1px);
+}
+
+/* Card resting footer: paper gradient */
+.mcard-foot {
+  background: linear-gradient(0deg,
+    rgba(234,232,226,.98) 0%,
+    rgba(234,232,226,.88) 65%,
+    transparent 100%);
+}
+.mcf-tag  { color: var(--accent); }
+.mcf-name { color: var(--muted); }
+.mcf-quote { color: var(--ink); opacity: .72; }
+
+/* Hover overlay: paper-toned */
+.mcard-hover {
+  background: linear-gradient(168deg,
+    rgba(234,232,226,.97) 0%,
+    rgba(224,222,216,.97) 55%,
+    rgba(210,208,202,.98) 100%);
+}
+.mcard-hover::after {
+  background-image: radial-gradient(circle, rgba(31,143,139,.045) 1px, transparent 1px);
+}
+/* Corner brackets: teal on light bg */
+.mch-head::before, .mch-head::after {
+  border-color: rgba(31,143,139,.55);
+}
+.mch-head { border-bottom: 1px solid rgba(31,143,139,.22); }
+.mch-tag    { color: var(--accent); }
+.mch-name   { color: var(--muted); }
+
+/* decorative open-quote: subtle ink */
+.mch-quote::before { color: rgba(12,12,12,.08); }
+.mch-qt { color: var(--ink); opacity: .82; }
+.mch-speaker { color: var(--accent); }
+.mch-speaker::before { background: var(--accent); }
+
+.mch-player {
+  border-top: 1px solid rgba(31,143,139,.2);
+  background: transparent;
+}
+.mch-player-rule {
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(31,143,139,.35) 30%,
+    rgba(31,143,139,.35) 70%, transparent 100%);
+}
+/* video bg on light card */
+.mch-player video { background: var(--paper-dark); }
+
+/* Cancel button: ink style */
+.mcard-cancel {
+  border: 1.5px solid rgba(31,143,139,.6);
+  background: rgba(234,232,226,.9);
+  color: var(--accent);
+}
+.mcard-cancel:hover {
+  background: rgba(31,143,139,.12);
+  transform: scale(1.1);
+}
+
 </style>
 </head>
 <body>
@@ -889,8 +1048,8 @@ img {
         </div>
 
         <div class="hero-actions">
-          <button class="btn btn-fill" type="button" data-open="archive-popup">Start Anywhere</button>
-          <button class="btn" type="button" data-open="fragment-popup">Send a fragment</button>
+          <button class="btn btn-fill" type="button" data-open="media-popup">Enter Archive</button>
+          <button class="btn" type="button" data-open="fragment-popup">Add a Voice</button>
         </div>
       </div>
 
@@ -900,7 +1059,9 @@ img {
         <!-- 3. Zine cover — full natural ratio -->
         <div class="cover-wrapper">
           <div class="zine-label">Still Becoming — current issue</div>
+          <div class="zine-sub">Self-publishing for unconventional narrative</div>
           <button class="cover-button" type="button" data-open="archive-popup">
+            <span class="zine-hover-hint">Click to see the zine ↗</span>
             <img draggable="false" oncontextmenu="return false"
               class="zine-cover"
               id="zine-img"
@@ -920,7 +1081,7 @@ img {
 
         <!-- 4. Audio block — dot texture, quote + button in one row -->
         <div class="audio-block">
-          <div class="label">Interview excerpt — Still Becoming</div>
+          <div class="label">Still Becoming Archive — Interview excerpt</div>
           <audio controls preload="metadata">
             <source src="asset/audio/Interview-audio-1.aac" type="audio/aac">
             Your browser doesn't support audio.
@@ -929,7 +1090,7 @@ img {
             <p class="audio-quote">
               "I would never follow a traditional life path, I am nothing like those people. But realistically speaking, a stable job is helpful." — Xiaofeng
             </p>
-            <button class="btn" type="button" data-open="media-popup">Follow a Voice</button>
+            <button class="btn" type="button" data-open="media-popup">Enter Archive</button>
           </div>
         </div>
 
@@ -1015,6 +1176,12 @@ img {
     </div>
     <!-- Full-stage deck area -->
     <div class="mp-stage" id="mp-stage">
+      <!-- Mobile hint overlay — click to dismiss -->
+      <div class="mp-hint-bar" id="mp-hint-bar">
+        <div class="mp-hint-bar-scroll">⇕ Swipe to discover<br>random stories</div>
+        <div class="mp-hint-bar-play">Tap ▶ play button to<br>listen or watch</div>
+        <div class="mp-hint-bar-tap">tap anywhere to dismiss</div>
+      </div>
       <!-- Teal veil — covers stage when a card is playing -->
       <div class="mp-veil" id="mp-veil"></div>
       <!-- The deck -->
@@ -1761,18 +1928,31 @@ img {
   }
   document.querySelectorAll('[data-open]').forEach(function(btn){
     btn.addEventListener('click',function(){
-      openPopup(btn.getAttribute('data-open'));
+      var target = btn.getAttribute('data-open');
+      openPopup(target);
       /* re-layout galaxy cards after popup renders */
-      if(btn.getAttribute('data-open') === 'media-popup'){
+      if(target === 'media-popup'){
         requestAnimationFrame(function(){
           requestAnimationFrame(function(){
             var e = new Event('resize');
             window.dispatchEvent(e);
           });
         });
+        /* show hint on mobile */
+        if(window.innerWidth <= 899){
+          var hb = document.getElementById('mp-hint-bar');
+          if(hb){ hb.classList.add('visible'); }
+        }
       }
     });
   });
+  var hintBar = document.getElementById('mp-hint-bar');
+  if(hintBar){
+    hintBar.addEventListener('click', function(){
+      hintBar.classList.remove('visible');
+    });
+  }
+
   document.querySelectorAll('[data-close]').forEach(function(btn){
     btn.addEventListener('click',function(){closePopup(btn.closest('.popup'));});
   });
